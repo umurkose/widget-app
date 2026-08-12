@@ -1,8 +1,9 @@
 "use client"
 
-import { ArrowDownRight, ArrowUpRight, LogIn } from "lucide-react"
+import { LogIn } from "lucide-react"
 
 import { useFilters, type RangeKey } from "@/components/widget/filters"
+import { StatBlock, StatDelta, StatRow } from "@/components/widget/stat-block"
 import { WidgetShell } from "@/components/widget/widget-shell"
 
 type LoginRangeData = {
@@ -70,20 +71,14 @@ const RANGE_DATA: Record<RangeKey, LoginRangeData> = {
 export function LoginCountWidget({ compact }: { compact?: boolean }) {
   const { range } = useFilters()
   const d = RANGE_DATA[range]
-  const DeltaIcon = d.dir === "up" ? ArrowUpRight : ArrowDownRight
 
   if (compact) {
     return (
       <WidgetShell title="Sign-ins" icon={LogIn} compact>
-        <div className="flex flex-1 items-center justify-between gap-3">
-          <div className="text-xl font-semibold leading-none tracking-tight">
-            {d.value}
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <DeltaIcon aria-hidden className="size-3" />
-            <span>{d.deltaShort}</span>
-          </div>
-        </div>
+        <StatRow
+          value={d.value}
+          right={<StatDelta direction={d.dir}>{d.deltaShort}</StatDelta>}
+        />
       </WidgetShell>
     )
   }
@@ -91,18 +86,14 @@ export function LoginCountWidget({ compact }: { compact?: boolean }) {
   return (
     <WidgetShell title="Sign-ins" icon={LogIn} accessory={d.accessory}>
       <div className="flex flex-1 flex-col justify-between gap-2">
-        <div className="space-y-1">
-          <div className="text-xs text-muted-foreground">{d.label}</div>
-          <div className="mt-1 mb-0.5 text-2xl font-semibold leading-none tracking-tight">
-            {d.value}
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <DeltaIcon aria-hidden className="size-3" />
-            <span>{d.delta}</span>
-          </div>
-        </div>
+        <StatBlock
+          label={d.label}
+          value={d.value}
+          delta={d.delta}
+          direction={d.dir}
+          detail={d.peak}
+        />
         <div className="shrink-0 space-y-1">
-          <div className="text-[10px] text-muted-foreground">{d.peak}</div>
           <div aria-hidden className="flex h-10 items-end gap-0.5">
             {d.bars.map((height, i) => (
               <div

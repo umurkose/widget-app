@@ -1,8 +1,9 @@
 "use client"
 
-import { ArrowDownRight, ArrowUpRight, TrendingUp } from "lucide-react"
+import { TrendingUp } from "lucide-react"
 
 import { useFilters, type RangeKey } from "@/components/widget/filters"
+import { StatBlock, StatDelta, StatRow } from "@/components/widget/stat-block"
 import { WidgetShell } from "@/components/widget/widget-shell"
 
 const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"]
@@ -77,39 +78,51 @@ const RANGE_DATA: Record<RangeKey, RevenueRangeData> = {
 export function RevenueWidget({ compact }: { compact?: boolean }) {
   const { range } = useFilters()
   const d = RANGE_DATA[range]
-  const DeltaIcon = d.dir === "up" ? ArrowUpRight : ArrowDownRight
   const areaPath = `${d.linePath} L100,32 L0,32 Z`
 
   if (compact) {
     return (
       <WidgetShell title="Revenue" icon={TrendingUp} compact>
-        <div className="flex flex-1 items-center justify-between gap-2">
-          <div className="text-xl leading-none font-semibold tracking-tight">
-            {d.value}
-          </div>
-          <div className="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground">
-            <DeltaIcon aria-hidden className="size-3" />
-            <span>{d.deltaShort}</span>
-          </div>
-        </div>
+        <StatRow
+          value={d.value}
+          right={
+            <div className="flex items-center gap-3">
+              <StatDelta direction={d.dir}>{d.deltaShort}</StatDelta>
+              <div aria-hidden className="h-8 w-20 shrink-0">
+                <svg
+                  viewBox="0 0 100 32"
+                  preserveAspectRatio="none"
+                  className="h-full w-full"
+                >
+                  <path d={areaPath} className="fill-primary/10" />
+                  <path
+                    d={d.linePath}
+                    fill="none"
+                    strokeWidth={2}
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="stroke-primary"
+                  />
+                </svg>
+              </div>
+            </div>
+          }
+        />
       </WidgetShell>
     )
   }
 
   return (
     <WidgetShell title="Revenue" icon={TrendingUp}>
-      <div className="flex flex-1 flex-col justify-between gap-2">
-        <div>
-          <div className="text-xs text-muted-foreground">{d.label}</div>
-          <div className="mt-1 mb-0.5 text-2xl leading-none font-semibold tracking-tight">
-            {d.value}
-          </div>
-          <div className="mt-1.5 flex items-center gap-0.5 text-xs text-muted-foreground">
-            <DeltaIcon aria-hidden className="size-3" />
-            <span>{d.delta}</span>
-          </div>
-        </div>
-        <div>
+      <div className="flex min-h-0 flex-1 flex-col justify-between gap-3">
+        <StatBlock
+          label={d.label}
+          value={d.value}
+          delta={d.delta}
+          direction={d.dir}
+        />
+        <div className="flex flex-col gap-1.5">
           <div className="relative">
             <svg
               aria-hidden
@@ -134,7 +147,7 @@ export function RevenueWidget({ compact }: { compact?: boolean }) {
               style={{ right: "-4px", top: d.endDotTop }}
             />
           </div>
-          <div className="mt-1 flex justify-between px-0.5">
+          <div className="flex justify-between px-0.5">
             {d.axisLabels.map((label, i) => (
               <span key={i} className="text-[9px] text-muted-foreground">
                 {label}

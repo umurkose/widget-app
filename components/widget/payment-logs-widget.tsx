@@ -1,6 +1,6 @@
 "use client"
 
-import { CreditCard } from "lucide-react"
+import { CreditCard, SearchX } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import {
@@ -8,6 +8,13 @@ import {
   useFilters,
   type RowMeta,
 } from "@/components/widget/filters"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { WidgetShell } from "@/components/widget/widget-shell"
 
 const PAYMENTS: {
@@ -118,7 +125,7 @@ export function PaymentLogsWidget({ compact }: { compact?: boolean }) {
             <div className="shrink-0 text-right">
               <p
                 className={cn(
-                  "text-xs leading-4 font-semibold tabular-nums",
+                  "font-heading text-xs leading-4 font-semibold tabular-nums",
                   latest.direction === "in"
                     ? "text-primary"
                     : "text-destructive"
@@ -132,7 +139,10 @@ export function PaymentLogsWidget({ compact }: { compact?: boolean }) {
             </div>
           </div>
         ) : (
-          <p className="flex-1 text-xs text-muted-foreground">No matches</p>
+          <div className="flex flex-1 items-center justify-center gap-1.5 text-muted-foreground">
+            <SearchX aria-hidden className="size-3.5" />
+            <span className="text-xs">No results</span>
+          </div>
         )}
       </WidgetShell>
     )
@@ -145,9 +155,17 @@ export function PaymentLogsWidget({ compact }: { compact?: boolean }) {
       accessory={`${visible.length} of ${PAYMENTS.length}`}
     >
       {visible.length === 0 ? (
-        <div className="rounded-lg border border-dashed py-6 text-center text-xs text-muted-foreground">
-          No entries match the filters.
-        </div>
+        <Empty className="flex-1 gap-1 p-4">
+          <EmptyHeader className="gap-1">
+            <EmptyMedia variant="icon" className="mb-0">
+              <SearchX />
+            </EmptyMedia>
+            <EmptyTitle className="text-xs">No results</EmptyTitle>
+            <EmptyDescription className="text-xs">
+              Nothing matches the current filters.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <ul className="flex flex-col divide-y divide-border/40">
           {visible.map((payment) => (
@@ -169,7 +187,7 @@ export function PaymentLogsWidget({ compact }: { compact?: boolean }) {
               <div className="shrink-0 text-right tabular-nums">
                 <p
                   className={cn(
-                    "text-xs leading-4 font-semibold",
+                    "font-heading text-xs leading-4 font-semibold",
                     payment.direction === "in"
                       ? "text-primary"
                       : "text-destructive"

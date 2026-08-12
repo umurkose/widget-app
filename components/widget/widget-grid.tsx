@@ -208,7 +208,7 @@ export function WidgetGrid({
       ref={gridRef}
       role="list"
       aria-label="Dashboard widgets"
-      className="grid min-h-0 flex-1 grid-cols-4 grid-rows-[repeat(4,minmax(5.25rem,8.5rem))] content-center gap-4 p-4 select-none"
+      className="grid min-h-full grid-cols-4 grid-rows-[repeat(4,minmax(5.25rem,8.5rem))] content-center gap-4 p-4 select-none"
     >
       <span aria-live="polite" className="sr-only">
         {announcement}

@@ -102,7 +102,7 @@ export function ClockWidget({ compact }: { compact?: boolean }) {
             <div className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
               {now?.toLocaleDateString("en-US", { weekday: "long" }) ?? "—"}
             </div>
-            <div className="text-2xl leading-tight font-semibold tracking-tight">
+            <div className="font-heading text-2xl leading-tight font-semibold tracking-tight">
               {now
                 ? now.toLocaleDateString("en-US", {
                     month: "short",
@@ -128,7 +128,7 @@ export function ClockWidget({ compact }: { compact?: boolean }) {
           <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
             {now?.toLocaleDateString("en-US", { weekday: "long" }) ?? "—"}
           </div>
-          <div className="text-3xl leading-tight font-semibold tracking-tight">
+          <div className="font-heading text-3xl leading-tight font-semibold tracking-tight">
             {now?.getDate() ?? "–"}
           </div>
           <div className="text-xs text-muted-foreground">

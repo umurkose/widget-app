@@ -1,8 +1,9 @@
 "use client"
 
-import { Activity, ArrowDownRight, ArrowUpRight } from "lucide-react"
+import { Activity } from "lucide-react"
 
 import { useFilters, type RangeKey } from "@/components/widget/filters"
+import { StatBlock, StatRow } from "@/components/widget/stat-block"
 import { WidgetShell } from "@/components/widget/widget-shell"
 
 function smoothPath(points: [number, number][]) {
@@ -153,17 +154,36 @@ const RANGE_DATA: Record<RangeKey, ApiRangeData> = {
 export function ApiUsageWidget({ compact }: { compact?: boolean }) {
   const { range } = useFilters()
   const d = RANGE_DATA[range]
-  const DeltaIcon = d.dir === "up" ? ArrowUpRight : ArrowDownRight
 
   if (compact) {
     return (
       <WidgetShell title="API usage" icon={Activity} compact>
-        <div className="flex flex-1 items-center justify-between gap-3">
-          <div className="text-xl font-semibold leading-none tracking-tight">
-            {d.value}
-          </div>
-          <div className="text-xs text-muted-foreground">{d.p95}</div>
-        </div>
+        <StatRow
+          value={d.value}
+          right={
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">{d.p95}</span>
+              <div aria-hidden className="h-8 w-20 shrink-0">
+                <svg
+                  viewBox="0 0 100 32"
+                  preserveAspectRatio="none"
+                  className="h-full w-full"
+                >
+                  <path d={d.chart.area} className="fill-primary/10" />
+                  <path
+                    d={d.chart.line}
+                    fill="none"
+                    strokeWidth={2}
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="stroke-primary"
+                  />
+                </svg>
+              </div>
+            </div>
+          }
+        />
       </WidgetShell>
     )
   }
@@ -171,19 +191,13 @@ export function ApiUsageWidget({ compact }: { compact?: boolean }) {
   return (
     <WidgetShell title="API usage" icon={Activity} accessory={d.accessory}>
       <div className="flex flex-1 flex-col justify-between gap-2">
-        <div className="space-y-1">
-          <div className="text-xs text-muted-foreground">{d.label}</div>
-          <div className="mt-1 mb-0.5 text-2xl font-semibold leading-none tracking-tight">
-            {d.value}
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <DeltaIcon aria-hidden className="size-3" />
-            <span>{d.delta}</span>
-          </div>
-          <div className="text-[11px] text-muted-foreground">
-            {d.p95} &middot; {d.err}
-          </div>
-        </div>
+        <StatBlock
+          label={d.label}
+          value={d.value}
+          delta={d.delta}
+          direction={d.dir}
+          detail={`${d.p95} · ${d.err}`}
+        />
         <div className="shrink-0 space-y-1">
           <div className="relative">
             <svg

@@ -1,8 +1,9 @@
 "use client"
 
-import { ArrowDownRight, ArrowUpRight, Globe } from "lucide-react"
+import { Globe } from "lucide-react"
 
 import { useFilters, type RangeKey } from "@/components/widget/filters"
+import { StatBlock, StatDelta, StatRow } from "@/components/widget/stat-block"
 import { WidgetShell } from "@/components/widget/widget-shell"
 
 const SOURCE_STYLES = [
@@ -68,7 +69,6 @@ const RANGE_DATA: Record<RangeKey, TrafficRangeData> = {
 export function TrafficWidget({ compact }: { compact?: boolean }) {
   const { range } = useFilters()
   const d = RANGE_DATA[range]
-  const DeltaIcon = d.dir === "up" ? ArrowUpRight : ArrowDownRight
   const offsets = d.shares.map((_, i) =>
     d.shares.slice(0, i).reduce((sum, share) => sum + share, 0)
   )
@@ -76,15 +76,10 @@ export function TrafficWidget({ compact }: { compact?: boolean }) {
   if (compact) {
     return (
       <WidgetShell title="Traffic" icon={Globe} compact>
-        <div className="flex flex-1 items-center justify-between gap-2">
-          <div className="text-xl leading-none font-semibold tracking-tight">
-            {d.value}
-          </div>
-          <div className="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground">
-            <DeltaIcon aria-hidden className="size-3" />
-            <span>{d.deltaShort}</span>
-          </div>
-        </div>
+        <StatRow
+          value={d.value}
+          right={<StatDelta direction={d.dir}>{d.deltaShort}</StatDelta>}
+        />
       </WidgetShell>
     )
   }
@@ -92,16 +87,12 @@ export function TrafficWidget({ compact }: { compact?: boolean }) {
   return (
     <WidgetShell title="Traffic" icon={Globe}>
       <div className="flex flex-1 flex-col justify-between gap-2">
-        <div>
-          <div className="text-xs text-muted-foreground">{d.label}</div>
-          <div className="mt-1 mb-0.5 text-2xl leading-none font-semibold tracking-tight">
-            {d.value}
-          </div>
-          <div className="mt-1.5 flex items-center gap-0.5 text-xs text-muted-foreground">
-            <DeltaIcon aria-hidden className="size-3" />
-            <span>{d.delta}</span>
-          </div>
-        </div>
+        <StatBlock
+          label={d.label}
+          value={d.value}
+          delta={d.delta}
+          direction={d.dir}
+        />
         <div className="flex items-center gap-3">
           <div className="relative size-24 shrink-0">
             <svg aria-hidden viewBox="0 0 36 36" className="size-full -rotate-90">
@@ -129,7 +120,7 @@ export function TrafficWidget({ compact }: { compact?: boolean }) {
               ))}
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-sm font-semibold">{d.value}</span>
+              <span className="font-heading text-sm font-semibold">{d.value}</span>
               <span className="text-[9px] text-muted-foreground">
                 {d.centerCaption}
               </span>

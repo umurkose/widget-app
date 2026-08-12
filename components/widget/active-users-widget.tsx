@@ -1,8 +1,9 @@
 "use client"
 
-import { ArrowDownRight, ArrowUpRight, Users } from "lucide-react"
+import { Users } from "lucide-react"
 
 import { useFilters, type RangeKey } from "@/components/widget/filters"
+import { StatBlock, StatRow } from "@/components/widget/stat-block"
 import { WidgetShell } from "@/components/widget/widget-shell"
 
 const ONLINE_NOW = "3,412"
@@ -48,25 +49,24 @@ const RANGE_DATA: Record<RangeKey, ActiveUsersRangeData> = {
 export function ActiveUsersWidget({ compact }: { compact?: boolean }) {
   const { range } = useFilters()
   const d = RANGE_DATA[range]
-  const DeltaIcon = d.dir === "up" ? ArrowUpRight : ArrowDownRight
 
   if (compact) {
     return (
       <WidgetShell title="Active users" icon={Users} compact>
-        <div className="flex flex-1 items-center justify-between gap-3">
-          <div className="text-xl font-semibold leading-none tracking-tight">
-            {ONLINE_NOW}
-          </div>
-          <div aria-hidden className="flex h-1.5 w-20 gap-0.5">
-            {SEGMENTS.map((segment) => (
-              <div
-                key={segment.name}
-                className={`rounded-full ${segment.mark}`}
-                style={{ width: `${segment.share}%` }}
-              />
-            ))}
-          </div>
-        </div>
+        <StatRow
+          value={ONLINE_NOW}
+          right={
+            <div aria-hidden className="flex h-1.5 w-20 gap-0.5">
+              {SEGMENTS.map((segment) => (
+                <div
+                  key={segment.name}
+                  className={`rounded-full ${segment.mark}`}
+                  style={{ width: `${segment.share}%` }}
+                />
+              ))}
+            </div>
+          }
+        />
       </WidgetShell>
     )
   }
@@ -74,16 +74,13 @@ export function ActiveUsersWidget({ compact }: { compact?: boolean }) {
   return (
     <WidgetShell title="Active users" icon={Users} accessory="Live">
       <div className="flex flex-1 flex-col justify-between gap-2">
-        <div className="space-y-1">
-          <div className="text-xs text-muted-foreground">Online now</div>
-          <div className="mt-1 mb-0.5 text-2xl font-semibold leading-none tracking-tight">
-            {ONLINE_NOW}
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <DeltaIcon aria-hidden className="size-3" />
-            <span>{d.context}</span>
-          </div>
-        </div>
+        <StatBlock
+          label="Online now"
+          value={ONLINE_NOW}
+          delta={d.context}
+          direction={d.dir}
+          detail={d.peak}
+        />
         <div className="shrink-0 space-y-1.5">
           <div
             aria-hidden
@@ -109,7 +106,6 @@ export function ActiveUsersWidget({ compact }: { compact?: boolean }) {
               </span>
             ))}
           </div>
-          <div className="text-[10px] text-muted-foreground">{d.peak}</div>
         </div>
       </div>
     </WidgetShell>

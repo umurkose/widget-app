@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeftRight } from "lucide-react"
+import { ArrowLeftRight, SearchX } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import {
@@ -8,6 +8,13 @@ import {
   useFilters,
   type RowMeta,
 } from "@/components/widget/filters"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { WidgetShell } from "@/components/widget/widget-shell"
 
 const TRANSFERS: {
@@ -130,7 +137,7 @@ export function TransfersWidget({ compact }: { compact?: boolean }) {
             </div>
             <span
               className={cn(
-                "shrink-0 text-right text-xs leading-4 font-semibold tabular-nums",
+                "font-heading shrink-0 text-right text-xs leading-4 font-semibold tabular-nums",
                 latest.meta.status === "failed"
                   ? "text-destructive"
                   : "text-primary"
@@ -140,7 +147,10 @@ export function TransfersWidget({ compact }: { compact?: boolean }) {
             </span>
           </div>
         ) : (
-          <p className="flex-1 text-xs text-muted-foreground">No matches</p>
+          <div className="flex flex-1 items-center justify-center gap-1.5 text-muted-foreground">
+            <SearchX aria-hidden className="size-3.5" />
+            <span className="text-xs">No results</span>
+          </div>
         )}
       </WidgetShell>
     )
@@ -154,7 +164,7 @@ export function TransfersWidget({ compact }: { compact?: boolean }) {
     >
       <div className="flex items-center justify-between pb-1.5 text-xs text-muted-foreground">
         <span>Total queued</span>
-        <span className="font-semibold text-primary tabular-nums">
+        <span className="font-heading font-semibold text-primary tabular-nums">
           {totalQueued.toLocaleString("en-US", {
             style: "currency",
             currency: "USD",
@@ -162,9 +172,17 @@ export function TransfersWidget({ compact }: { compact?: boolean }) {
         </span>
       </div>
       {visible.length === 0 ? (
-        <div className="rounded-lg border border-dashed py-6 text-center text-xs text-muted-foreground">
-          No entries match the filters.
-        </div>
+        <Empty className="flex-1 gap-1 p-4">
+          <EmptyHeader className="gap-1">
+            <EmptyMedia variant="icon" className="mb-0">
+              <SearchX />
+            </EmptyMedia>
+            <EmptyTitle className="text-xs">No results</EmptyTitle>
+            <EmptyDescription className="text-xs">
+              Nothing matches the current filters.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <ul className="flex flex-col divide-y divide-border/40">
           {visible.map((transfer) => (
@@ -187,7 +205,7 @@ export function TransfersWidget({ compact }: { compact?: boolean }) {
               <div className="shrink-0 text-right tabular-nums">
                 <p
                   className={cn(
-                    "text-xs leading-4 font-semibold",
+                    "font-heading text-xs leading-4 font-semibold",
                     transfer.meta.status === "failed"
                       ? "text-destructive"
                       : "text-primary"

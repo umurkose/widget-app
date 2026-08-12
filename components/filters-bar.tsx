@@ -1,6 +1,16 @@
 "use client"
 
-import { RotateCcw } from "lucide-react"
+import {
+  Activity,
+  CircleCheck,
+  CircleDashed,
+  CircleX,
+  CreditCard,
+  KeyRound,
+  RotateCcw,
+  UserCog,
+  type LucideIcon,
+} from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -12,6 +22,16 @@ import {
   STATUSES,
   type Filters,
 } from "@/components/widget/filters"
+
+const PILL_ICONS: Record<string, LucideIcon> = {
+  success: CircleCheck,
+  pending: CircleDashed,
+  failed: CircleX,
+  payments: CreditCard,
+  auth: KeyRound,
+  admin: UserCog,
+  api: Activity,
+}
 
 function PillGroup<K extends string>({
   label,
@@ -30,22 +50,26 @@ function PillGroup<K extends string>({
       aria-label={label}
       className="flex flex-wrap items-center gap-1"
     >
-      {options.map((o) => (
-        <button
-          key={o.key}
-          type="button"
-          aria-pressed={value === o.key}
-          onClick={() => onSelect(o.key)}
-          className={cn(
-            "h-7 rounded-(--radius-control) px-2.5 text-xs font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-            value === o.key
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          {o.label}
-        </button>
-      ))}
+      {options.map((o) => {
+        const Icon = PILL_ICONS[o.key]
+        return (
+          <button
+            key={o.key}
+            type="button"
+            aria-pressed={value === o.key}
+            onClick={() => onSelect(o.key)}
+            className={cn(
+              "flex h-7 items-center gap-1.5 rounded-(--radius-control) px-2.5 text-xs font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+              value === o.key
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            {Icon && <Icon aria-hidden className="size-3.5" />}
+            {o.label}
+          </button>
+        )
+      })}
     </div>
   )
 }

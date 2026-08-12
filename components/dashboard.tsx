@@ -133,7 +133,7 @@ export function Dashboard() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between gap-2 rounded-t-2xl border-b bg-background/80 px-4 py-3 backdrop-blur-md">
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b bg-background px-4 py-3">
         <div className="flex items-center gap-2">
           <Tooltip>
             <TooltipTrigger
@@ -203,18 +203,22 @@ export function Dashboard() {
         </div>
       </header>
       <FiltersBar open={filtersOpen} filters={filters} onChange={setFilters} />
-      <FiltersProvider value={filters}>
-        <WidgetGrid
-          items={placement}
-          onChange={setPlacement}
-          editing={editing}
-          onRemove={(id) => setPlacement(placement.filter((w) => w.id !== id))}
-          onAddRequest={() => {
-            if (!editing) enterEdit()
-            setPickerOpen(true)
-          }}
-        />
-      </FiltersProvider>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <FiltersProvider value={filters}>
+          <WidgetGrid
+            items={placement}
+            onChange={setPlacement}
+            editing={editing}
+            onRemove={(id) =>
+              setPlacement(placement.filter((w) => w.id !== id))
+            }
+            onAddRequest={() => {
+              if (!editing) enterEdit()
+              setPickerOpen(true)
+            }}
+          />
+        </FiltersProvider>
+      </div>
       <AddWidgetDialog
         open={pickerOpen}
         onOpenChange={setPickerOpen}

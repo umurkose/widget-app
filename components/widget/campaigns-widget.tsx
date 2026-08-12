@@ -58,7 +58,7 @@ export function CampaignsWidget({ compact }: { compact?: boolean }) {
               style={{ width: `${top.spent}%` }}
             />
           </div>
-          <span className="shrink-0 text-right text-xs text-muted-foreground tabular-nums">
+          <span className="font-heading shrink-0 text-right text-xs text-muted-foreground tabular-nums">
             {top.conversion}
           </span>
         </div>
@@ -75,7 +75,7 @@ export function CampaignsWidget({ compact }: { compact?: boolean }) {
               <span className="min-w-0 truncate text-xs font-medium text-foreground">
                 {campaign.name}
               </span>
-              <span className="shrink-0 text-right text-xs text-muted-foreground tabular-nums">
+              <span className="font-heading shrink-0 text-right text-xs text-muted-foreground tabular-nums">
                 {campaign.conversion}
               </span>
             </div>

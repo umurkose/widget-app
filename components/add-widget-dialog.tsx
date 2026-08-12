@@ -49,7 +49,7 @@ export function AddWidgetDialog({
               className="group flex items-center justify-between gap-3 rounded-xl border p-3 text-left transition-colors outline-none hover:bg-muted/50 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span className="min-w-0">
-                <span className="block text-sm font-medium">{w.title}</span>
+                <span className="font-heading block text-sm font-medium">{w.title}</span>
                 <span className="block truncate text-xs text-muted-foreground">
                   {w.description}
                 </span>
