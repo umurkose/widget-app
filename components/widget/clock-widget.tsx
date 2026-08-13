@@ -11,13 +11,6 @@ const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"]
 const HAND_LAYER =
   "absolute inset-0 motion-reduce:[animation-play-state:paused]"
 
-// Soft-UI depth: light from the top-left, shade to the bottom-right. Dark
-// mode keeps the shade and thins the highlight, the way real matte does.
-const RAISED =
-  "shadow-[5px_5px_12px_rgb(0_0_0/0.10),-4px_-4px_10px_rgb(255_255_255/0.85)] dark:shadow-[6px_6px_14px_rgb(0_0_0/0.55),-4px_-4px_10px_rgb(255_255_255/0.04)]"
-const INSET =
-  "shadow-[inset_2px_2px_5px_rgb(0_0_0/0.10),inset_-2px_-2px_5px_rgb(255_255_255/0.85)] dark:shadow-[inset_3px_3px_6px_rgb(0_0_0/0.55),inset_-2px_-2px_5px_rgb(255_255_255/0.04)]"
-
 /**
  * Hands are driven entirely by CSS: each layer spins with the real period
  * (60s / 1h / 12h) and a negative animation-delay winds it to the current
@@ -38,22 +31,25 @@ const AnalogClock = React.memo(function AnalogClock({
   return (
     <div
       aria-hidden
-      className={cn(
-        "relative aspect-square rounded-full bg-card",
-        RAISED,
-        className
-      )}
+      className={cn("relative aspect-square rounded-full bg-muted", className)}
     >
-      {/* recessed dial inside the raised body */}
-      <div className={cn("absolute inset-[9%] rounded-full bg-card", INSET)} />
-      {/* four quiet markers — 12, 3, 6, 9 */}
-      {[0, 90, 180, 270].map((deg) => (
+      {/* a tick per minute: quarters longest, hours mid, minutes hairline */}
+      {Array.from({ length: 60 }).map((_, i) => (
         <span
-          key={deg}
+          key={i}
           className="absolute inset-0"
-          style={{ transform: `rotate(${deg}deg)` }}
+          style={{ transform: `rotate(${i * 6}deg)` }}
         >
-          <span className="absolute top-[15%] left-1/2 h-[6%] w-px -translate-x-1/2 rounded-full bg-foreground/25" />
+          <span
+            className={cn(
+              "absolute left-1/2 w-px -translate-x-1/2 rounded-full",
+              i % 15 === 0
+                ? "top-[13%] h-[7%] bg-foreground/55"
+                : i % 5 === 0
+                  ? "top-[13%] h-[5%] bg-foreground/35"
+                  : "top-[13%] h-[2.5%] bg-foreground/15"
+            )}
+          />
         </span>
       ))}
       {/* hour hand */}
@@ -61,23 +57,23 @@ const AnalogClock = React.memo(function AnalogClock({
         className={cn(HAND_LAYER, "animate-[spin_43200s_linear_infinite]")}
         style={{ animationDelay: `-${hours}s` }}
       >
-        <span className="absolute bottom-[49%] left-1/2 h-[24%] w-[3.5%] -translate-x-1/2 rounded-full bg-foreground/80" />
+        <span className="absolute bottom-[49%] left-1/2 h-[22%] w-[2.5%] -translate-x-1/2 rounded-full bg-foreground/70" />
       </span>
       {/* minute hand */}
       <span
         className={cn(HAND_LAYER, "animate-[spin_3600s_linear_infinite]")}
         style={{ animationDelay: `-${minutes}s` }}
       >
-        <span className="absolute bottom-[49%] left-1/2 h-[35%] w-[2.5%] -translate-x-1/2 rounded-full bg-foreground/80" />
+        <span className="absolute bottom-[49%] left-1/2 h-[33%] w-[1.8%] -translate-x-1/2 rounded-full bg-foreground/70" />
       </span>
       {/* second hand */}
       <span
         className={cn(HAND_LAYER, "animate-[spin_60s_linear_infinite]")}
         style={{ animationDelay: `-${seconds}s` }}
       >
-        <span className="absolute bottom-[49%] left-1/2 h-[38%] w-[1.5%] -translate-x-1/2 rounded-full bg-primary" />
+        <span className="absolute bottom-[49%] left-1/2 h-[36%] w-[1%] -translate-x-1/2 rounded-full bg-primary" />
       </span>
-      <span className="absolute top-1/2 left-1/2 size-[5%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/80" />
+      <span className="absolute top-1/2 left-1/2 size-[3.5%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/70" />
     </div>
   )
 })
@@ -102,7 +98,7 @@ function parts(now: Date) {
   }
 }
 
-/** Week strip: today sits in a pressed well, the rest stay flat and quiet. */
+/** Week strip: flat and quiet — today is marked by weight and a dot. */
 function WeekStrip({
   dates,
   today,
@@ -117,30 +113,33 @@ function WeekStrip({
       {DAY_LABELS.map((label, i) => {
         const isToday = i === today
         return (
-          <div
-            key={i}
-            className={cn(
-              "flex flex-1 flex-col items-center gap-1 rounded-xl py-1.5",
-              isToday && cn("bg-card", INSET)
-            )}
-          >
+          <div key={i} className="flex flex-1 flex-col items-center gap-1 py-1">
             <span
               className={cn(
                 "text-[9px] leading-none font-medium tracking-wider",
-                isToday ? "text-foreground/70" : "text-muted-foreground/70"
+                isToday ? "text-foreground" : "text-muted-foreground/70"
               )}
             >
               {label}
             </span>
             <span
               className={cn(
-                "font-accent leading-none font-medium tabular-nums",
+                "font-accent leading-none tabular-nums",
                 compact ? "text-[10px]" : "text-[11px]",
-                isToday ? "text-foreground" : "text-muted-foreground"
+                isToday
+                  ? "font-semibold text-foreground"
+                  : "text-muted-foreground"
               )}
             >
               {dates[i] ?? ""}
             </span>
+            <span
+              aria-hidden
+              className={cn(
+                "size-1 rounded-full",
+                isToday ? "bg-primary" : "bg-transparent"
+              )}
+            />
           </div>
         )
       })}
@@ -200,18 +199,13 @@ export function ClockWidget({ compact }: { compact?: boolean }) {
 
   return (
     <WidgetShell title="Clock" icon={Clock}>
-      <div className="flex min-h-0 flex-1 items-center justify-between gap-4">
+      <div className="flex min-h-0 flex-1 items-center justify-center gap-6">
         {mountedAt ? (
           <AnalogClock now={mountedAt} className="h-full max-h-30" />
         ) : (
-          <div
-            className={cn(
-              "aspect-square h-full max-h-30 rounded-full bg-card",
-              RAISED
-            )}
-          />
+          <div className="aspect-square h-full max-h-30 rounded-full bg-muted" />
         )}
-        <div className="flex flex-col items-end text-right">
+        <div className="flex flex-col items-start">
           <div className="font-accent flex items-baseline gap-1.5 text-4xl leading-none font-medium tracking-tight tabular-nums">
             {time}
             <span className="text-xs font-medium text-muted-foreground">

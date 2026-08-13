@@ -46,7 +46,7 @@ export function ThemePreferences() {
         </TooltipTrigger>
         <TooltipContent>Preferences</TooltipContent>
       </Tooltip>
-      <PopoverContent align="end" className="w-56 p-4">
+      <PopoverContent align="end" className="w-68 p-4">
         <div className="space-y-4">
           <fieldset>
             <legend className="text-xs font-medium text-muted-foreground">
@@ -193,7 +193,7 @@ export function ThemePreferences() {
             <legend className="text-xs font-medium text-muted-foreground">
               Corner radius
             </legend>
-            <div className="mt-2 grid grid-cols-4 gap-1.5">
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
               {RADII.map((r) => (
                 <Tooltip key={r.key}>
                   <TooltipTrigger

@@ -79,13 +79,6 @@ export const RADII = [
     preview: "rounded-[5px]",
   },
   {
-    key: "md",
-    label: "Default",
-    value: null,
-    control: null,
-    preview: "rounded-[8px]",
-  },
-  {
     key: "lg",
     label: "Large",
     value: "1rem",
@@ -107,7 +100,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   theme: "default",
   font: "geist",
   textSize: "lg",
-  radius: "md",
+  radius: "lg",
 }
 
 export const ACCENT_FOREGROUND = "oklch(0.985 0 0)"

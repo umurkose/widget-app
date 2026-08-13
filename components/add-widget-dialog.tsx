@@ -1,7 +1,14 @@
 "use client"
 
-import { Plus } from "lucide-react"
+import { LayoutGrid, Plus } from "lucide-react"
 
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import {
   Dialog,
   DialogContent,
@@ -63,9 +70,18 @@ export function AddWidgetDialog({
             </button>
           ))}
           {available.length === 0 && (
-            <p className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
-              Every {role} widget is already on the board.
-            </p>
+            <Empty className="border border-dashed">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <LayoutGrid />
+                </EmptyMedia>
+                <EmptyTitle>Board is complete</EmptyTitle>
+                <EmptyDescription>
+                  Every {role} widget is already on the board. Remove one to
+                  free a slot.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
         </div>
       </DialogContent>

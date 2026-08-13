@@ -338,7 +338,7 @@ export function WidgetGrid({
                           disabled={!canGrow(w)}
                           onClick={() => toggleSize(w)}
                           onPointerDownCapture={(e) => e.stopPropagation()}
-                          className="absolute -right-2 -bottom-2 z-10 flex size-6 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-md transition-colors outline-none animate-in fade-in-0 zoom-in-50 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-40 disabled:hover:text-muted-foreground"
+                          className="absolute -top-2 -left-2 z-10 flex size-6 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-md transition-colors outline-none animate-in fade-in-0 zoom-in-50 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-40 disabled:hover:text-muted-foreground"
                         />
                       }
                     >
