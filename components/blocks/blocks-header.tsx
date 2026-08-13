@@ -41,7 +41,7 @@ export function BlocksHeader() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Blocks</BreadcrumbPage>
+              <BreadcrumbPage className="font-accent">Blocks</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

@@ -439,7 +439,7 @@ export function DataGrid({
                   </TableCell>
                   <TableCell
                     className={cn(
-                      "text-right font-medium tabular-nums",
+                      "font-accent text-right font-medium tabular-nums",
                       row.amount < 0 && "text-destructive"
                     )}
                   >
@@ -465,7 +465,7 @@ export function DataGrid({
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Progress value={row.usage} className="w-16 flex-nowrap" />
-                        <span className="text-xs text-muted-foreground tabular-nums">
+                        <span className="font-accent text-xs text-muted-foreground tabular-nums">
                           {row.usage}%
                         </span>
                       </div>

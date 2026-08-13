@@ -58,7 +58,7 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex-1 rounded-md border px-2 py-1.5">
       <p className="text-[10px] text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium tabular-nums">{value}</p>
+      <p className="font-accent text-sm font-medium tabular-nums">{value}</p>
     </div>
   )
 }
@@ -66,7 +66,7 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 const ENDPOINTS = ["/v1/widgets", "/v1/boards", "/v1/events", "/v1/exports"]
 const NOTE_AUTHORS = ["Aylin Kaya", "Mert Demirtas", "Selin Aydin"]
 const num = (value: React.ReactNode) => (
-  <span className="tabular-nums">{value}</span>
+  <span className="font-accent tabular-nums">{value}</span>
 )
 
 export function TabPanel({
@@ -211,7 +211,7 @@ export function TabPanel({
           cell: (b) => (
             <span
               className={cn(
-                "tabular-nums",
+                "font-accent tabular-nums",
                 b.delta > 0 && "text-green-600 dark:text-green-500",
                 b.delta < 0 && "text-destructive"
               )}
@@ -228,7 +228,8 @@ export function TabPanel({
         <div>
           <Sparkline
             data={row.activity}
-            className={cn("h-12 w-full", trendClass(row.activity))}
+            stretch
+            className={cn("h-16 w-full", trendClass(row.activity))}
           />
           <div className="flex gap-2 pt-2 pb-1">
             <Stat label="Peak" value={Math.max(...row.activity)} />
@@ -305,7 +306,7 @@ export function TabPanel({
           align: "right",
           cell: (a) => (
             <span
-              className={cn("tabular-nums", a.amount < 0 && "text-destructive")}
+              className={cn("font-accent tabular-nums", a.amount < 0 && "text-destructive")}
             >
               {formatAmount(a.amount, row.currency)}
             </span>
@@ -387,7 +388,7 @@ export function TabPanel({
           align: "right",
           cell: (r) => (
             <span
-              className={cn("tabular-nums", r.amount < 0 && "text-destructive")}
+              className={cn("font-accent tabular-nums", r.amount < 0 && "text-destructive")}
             >
               {formatAmount(r.amount, r.currency)}
             </span>
@@ -491,7 +492,7 @@ export function TabPanel({
           <div className="pb-2">
             <div className="flex items-center justify-between gap-2 py-1.5">
               <span className="text-xs text-muted-foreground">Quota</span>
-              <span className="text-xs font-medium tabular-nums">
+              <span className="font-accent text-xs font-medium tabular-nums">
                 {row.usage}% of 100k
               </span>
             </div>

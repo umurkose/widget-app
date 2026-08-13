@@ -16,9 +16,12 @@ export function trendClass(data: number[]) {
 export function Sparkline({
   data,
   className,
+  stretch = false,
 }: {
   data: number[]
   className?: string
+  /** Fill the container instead of keeping the 64×20 aspect ratio. */
+  stretch?: boolean
 }) {
   const min = Math.min(...data)
   const max = Math.max(...data)
@@ -35,9 +38,12 @@ export function Sparkline({
   return (
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-      width={WIDTH}
-      height={HEIGHT}
-      className={cn("shrink-0", className)}
+      width={stretch ? undefined : WIDTH}
+      height={stretch ? undefined : HEIGHT}
+      // Stretching distorts the viewBox, so the stroke opts out of scaling
+      // and keeps an even weight across the full width.
+      preserveAspectRatio={stretch ? "none" : undefined}
+      className={cn(!stretch && "shrink-0", className)}
       aria-hidden="true"
     >
       <polygon points={area} fill="currentColor" opacity={0.12} />
@@ -48,6 +54,7 @@ export function Sparkline({
         strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect={stretch ? "non-scaling-stroke" : undefined}
       />
     </svg>
   )

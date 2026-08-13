@@ -41,7 +41,7 @@ export function TablePageHeader() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Table</BreadcrumbPage>
+              <BreadcrumbPage className="font-accent">Table</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

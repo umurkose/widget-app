@@ -145,7 +145,7 @@ export function Dashboard() {
             </TooltipTrigger>
             <TooltipContent>Toggle sidebar</TooltipContent>
           </Tooltip>
-          <span className="text-sm font-medium">Home</span>
+          <span className="font-accent text-sm font-medium">Home</span>
         </div>
         <div className="flex items-center gap-2">
           {editing ? (
