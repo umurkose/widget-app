@@ -32,6 +32,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
+import { Spinner } from "@/components/ui/spinner"
 import {
   Table,
   TableBody,
@@ -89,7 +90,13 @@ function sortValue(row: Transaction, key: SortKey): string | number {
   }
 }
 
-export function DataGrid({ header }: { header?: React.ReactNode }) {
+export function DataGrid({
+  header,
+  initialSlug,
+}: {
+  header?: React.ReactNode
+  initialSlug?: string
+}) {
   const [rows, setRows] = React.useState<Transaction[]>(TRANSACTIONS)
   const [search, setSearch] = React.useState("")
   const [status, setStatus] = React.useState("all")
@@ -106,7 +113,46 @@ export function DataGrid({ header }: { header?: React.ReactNode }) {
     DEFAULT_TABLE_FILTERS
   )
   const [filtersOpen, setFiltersOpen] = React.useState(true)
-  const [activeId, setActiveId] = React.useState<string | null>(null)
+  const [activeId, setActiveId] = React.useState<string | null>(
+    () => TRANSACTIONS.find((row) => row.slug === initialSlug)?.id ?? null
+  )
+
+  // The open row is a real address: /table/<slug>. pushState keeps the grid
+  // mounted (filters, page and selection survive) while Back still works.
+  const openDetail = React.useCallback((id: string | null) => {
+    setActiveId(id)
+    const slug = TRANSACTIONS.find((row) => row.id === id)?.slug
+    const url = slug ? `/table/${slug}` : "/table"
+    if (window.location.pathname !== url) {
+      window.history.pushState(null, "", url)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    const onPopState = () => {
+      const slug = window.location.pathname.split("/")[2]
+      setActiveId(TRANSACTIONS.find((row) => row.slug === slug)?.id ?? null)
+    }
+    window.addEventListener("popstate", onPopState)
+    return () => window.removeEventListener("popstate", onPopState)
+  }, [])
+  const [pending, setPending] = React.useState(false)
+  const fetchTimer = React.useRef<number | null>(null)
+
+  // Stands in for a server round-trip: every query change flashes the same
+  // spinner a real fetch would.
+  const simulateFetch = React.useCallback(() => {
+    setPending(true)
+    if (fetchTimer.current) window.clearTimeout(fetchTimer.current)
+    fetchTimer.current = window.setTimeout(() => setPending(false), 450)
+  }, [])
+
+  React.useEffect(
+    () => () => {
+      if (fetchTimer.current) window.clearTimeout(fetchTimer.current)
+    },
+    []
+  )
 
   const filtered = React.useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -194,12 +240,12 @@ export function DataGrid({ header }: { header?: React.ReactNode }) {
   const openRow = (event: React.MouseEvent<HTMLTableRowElement>, id: string) => {
     const target = event.target as HTMLElement
     if (target.closest('button, a, input, [role="checkbox"]')) return
-    setActiveId(id)
+    openDetail(id)
   }
 
   const deleteSelected = () => {
     setRows((prev) => prev.filter((row) => !selected.has(row.id)))
-    if (activeId && selected.has(activeId)) setActiveId(null)
+    if (activeId && selected.has(activeId)) openDetail(null)
     setSelected(new Set())
     setPage(1)
   }
@@ -211,6 +257,7 @@ export function DataGrid({ header }: { header?: React.ReactNode }) {
       return null
     })
     setPage(1)
+    simulateFetch()
   }
 
   const visibleOptional = [columns.activity, columns.usage, columns.tags].filter(
@@ -229,12 +276,14 @@ export function DataGrid({ header }: { header?: React.ReactNode }) {
           setSearch(value)
           pruneSelected(value, status, filters)
           setPage(1)
+          simulateFetch()
         }}
         status={status}
         onStatusChange={(value) => {
           setStatus(value)
           pruneSelected(search, value, filters)
           setPage(1)
+          simulateFetch()
         }}
         filtersOpen={filtersOpen}
         onFiltersOpenChange={setFiltersOpen}
@@ -250,6 +299,7 @@ export function DataGrid({ header }: { header?: React.ReactNode }) {
           setFilters(DEFAULT_TABLE_FILTERS)
           pruneSelected("", "all", DEFAULT_TABLE_FILTERS)
           setPage(1)
+          simulateFetch()
         }}
         rowCount={sorted.length}
         columns={columns}
@@ -262,6 +312,7 @@ export function DataGrid({ header }: { header?: React.ReactNode }) {
           setFilters(next)
           pruneSelected(search, status, next)
           setPage(1)
+          simulateFetch()
         }}
       />
       <div className="relative min-h-0 flex-1">
@@ -438,7 +489,7 @@ export function DataGrid({ header }: { header?: React.ReactNode }) {
                     {row.lastActive}
                   </TableCell>
                   <TableCell className="w-10 pr-4 text-right">
-                    <RowActions row={row} onView={() => setActiveId(row.id)} />
+                    <RowActions row={row} onView={() => openDetail(row.id)} />
                   </TableCell>
                 </TableRow>
               )
@@ -446,6 +497,11 @@ export function DataGrid({ header }: { header?: React.ReactNode }) {
           </TableBody>
         </Table>
         </div>
+        {pending && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 animate-in fade-in-0">
+            <Spinner className="size-6 text-muted-foreground" />
+          </div>
+        )}
         {selected.size > 0 && (
           <SelectionBar
             count={selected.size}
@@ -461,15 +517,32 @@ export function DataGrid({ header }: { header?: React.ReactNode }) {
         selectedCount={selected.size}
         page={currentPage}
         pageCount={pageCount}
-        onPageChange={setPage}
+        onPageChange={(value) => {
+          setPage(value)
+          simulateFetch()
+        }}
         perPage={perPage}
         onPerPageChange={(value) => {
           setPerPage(value)
           setPage(1)
+          simulateFetch()
         }}
       />
       </div>
-      <RowDetailPanel row={activeRow} onClose={() => setActiveId(null)} />
+      <RowDetailPanel
+        row={activeRow}
+        related={
+          activeRow
+            ? rows
+                .filter(
+                  (r) =>
+                    r.user.email === activeRow.user.email && r.id !== activeRow.id
+                )
+                .slice(0, 8)
+            : []
+        }
+        onClose={() => openDetail(null)}
+      />
     </div>
   )
 }

@@ -22,10 +22,27 @@ import {
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
+// Each destination keeps its own accent while active — the same green the
+// table's Export button uses, so the dock reads as part of the page.
 const items = [
-  { href: "/", label: "Overview", icon: House },
-  { href: "/blocks", label: "Blocks", icon: Blocks },
-  { href: "/table", label: "Table", icon: Table },
+  {
+    href: "/",
+    label: "Home",
+    icon: House,
+    activeClass: "text-blue-600 dark:text-blue-400",
+  },
+  {
+    href: "/blocks",
+    label: "Blocks",
+    icon: Blocks,
+    activeClass: "text-violet-600 dark:text-violet-400",
+  },
+  {
+    href: "/table",
+    label: "Table",
+    icon: Table,
+    activeClass: "text-green-600 dark:text-green-500",
+  },
 ]
 
 export function AppDock() {
@@ -115,7 +132,7 @@ export function AppDock() {
                       className={cn(
                         "absolute inset-0 rounded-(--radius-control) transition-colors",
                         isActive
-                          ? "text-foreground"
+                          ? item.activeClass
                           : "text-muted-foreground hover:text-foreground"
                       )}
                     />

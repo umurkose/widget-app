@@ -18,16 +18,22 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { formatAmount, type Transaction } from "@/components/table/data"
-import { StatusBadge } from "@/components/table/cells"
-import { Sparkline, trendClass } from "@/components/table/sparkline"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import { type Transaction } from "@/components/table/data"
+import { TabPanel, type Tab } from "@/components/table/tab-panels"
 import { Button } from "@/components/ui/button"
-import { Kbd } from "@/components/ui/kbd"
-import { Progress } from "@/components/ui/progress"
 
-const PANEL_WIDTH = 340
+const DEFAULT_WIDTH = 340
+const MIN_WIDTH = 280
+const RESIZE_STEP = 24
+
+/** Never wider than half the window, never narrower than MIN_WIDTH. */
+function clampWidth(width: number) {
+  const max = Math.max(
+    MIN_WIDTH,
+    Math.round((typeof window === "undefined" ? 1440 : window.innerWidth) / 2)
+  )
+  return Math.min(Math.max(width, MIN_WIDTH), max)
+}
 
 const TABS = [
   { key: "Overview", icon: Info },
@@ -40,147 +46,23 @@ const TABS = [
   { key: "Notes", icon: StickyNote },
   { key: "Files", icon: Paperclip },
   { key: "Audit", icon: ShieldCheck },
-] as const satisfies readonly { key: string; icon: LucideIcon }[]
-
-type Tab = (typeof TABS)[number]["key"]
-
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-start justify-between gap-3 py-1.5">
-      <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
-      <span className="min-w-0 text-right text-xs font-medium">{children}</span>
-    </div>
-  )
-}
-
-function TabPanel({ tab, row }: { tab: Tab; row: Transaction }) {
-  switch (tab) {
-    case "Overview":
-      return (
-        <>
-          <Row label="Status">
-            <StatusBadge status={row.status} />
-          </Row>
-          <Row label="Amount">
-            <span
-              className={cn("tabular-nums", row.amount < 0 && "text-destructive")}
-            >
-              {formatAmount(row.amount, row.currency)}
-            </span>
-          </Row>
-          <Row label="Method">
-            {row.method.brand} ••{row.method.last4}
-          </Row>
-          <Row label="Last active">{row.lastActive}</Row>
-        </>
-      )
-    case "Activity":
-      return (
-        <>
-          <Sparkline
-            data={row.activity}
-            className={cn("h-10 w-full", trendClass(row.activity))}
-          />
-          <Row label="Peak">{Math.max(...row.activity)} calls</Row>
-          <Row label="Average">
-            {Math.round(
-              row.activity.reduce((sum, v) => sum + v, 0) / row.activity.length
-            )}{" "}
-            calls
-          </Row>
-        </>
-      )
-    case "Payment":
-      return (
-        <>
-          <Row label="Brand">{row.method.brand}</Row>
-          <Row label="Card">•••• {row.method.last4}</Row>
-          <Row label="Currency">{row.currency}</Row>
-          <Row label="Auto-renew">{row.autoRenew ? "On" : "Off"}</Row>
-        </>
-      )
-    case "Customer":
-      return (
-        <>
-          <div className="flex items-center gap-2 py-1.5">
-            <Avatar size="sm">
-              <AvatarFallback>{row.user.initials}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="truncate text-xs font-medium">{row.user.name}</p>
-              <p className="truncate text-[11px] text-muted-foreground">
-                {row.user.email}
-              </p>
-            </div>
-          </div>
-          <Row label="Role">{row.role}</Row>
-          <Row label="Verified">{row.verified ? "Yes" : "No"}</Row>
-        </>
-      )
-    case "Usage":
-      return (
-        <>
-          <div className="py-1.5">
-            <Progress value={row.usage} />
-          </div>
-          <Row label="Quota used">{row.usage}%</Row>
-          <Row label="Plan limit">100k calls</Row>
-        </>
-      )
-    case "Tags":
-      return (
-        <div className="flex flex-wrap gap-1 py-1.5">
-          {row.tags.map((tag) => (
-            <Badge key={tag} variant="secondary">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      )
-    case "Timeline":
-      return (
-        <>
-          <Row label="Created">{row.lastActive}</Row>
-          <Row label="Authorized">{row.lastActive}</Row>
-          <Row label="Settled">
-            {row.status === "Paid" ? row.lastActive : "—"}
-          </Row>
-        </>
-      )
-    case "Notes":
-      return (
-        <p className="py-1.5 text-xs text-muted-foreground">
-          No notes on {row.id} yet. Anyone with editor access can leave one.
-        </p>
-      )
-    case "Files":
-      return (
-        <>
-          <Row label="Receipt">{row.id}.pdf</Row>
-          <Row label="Invoice">INV-{row.id.slice(3)}.pdf</Row>
-        </>
-      )
-    case "Audit":
-      return (
-        <>
-          <Row label="Opened by">{row.user.name}</Row>
-          <Row label="Source">{row.tags[0] ?? "manual"}</Row>
-          <Row label="Reference">{row.id}</Row>
-        </>
-      )
-  }
-}
+] as const satisfies readonly { key: Tab; icon: LucideIcon }[]
 
 export function RowDetailPanel({
   row,
+  related,
   onClose,
 }: {
   row: Transaction | null
+  related: Transaction[]
   onClose: () => void
 }) {
   const reducedMotion = useReducedMotion()
   const [tab, setTab] = React.useState<Tab>("Overview")
   const [shownId, setShownId] = React.useState(row?.id)
+  const [width, setWidth] = React.useState(DEFAULT_WIDTH)
+  const [resizing, setResizing] = React.useState(false)
+  const drag = React.useRef<{ startX: number; startWidth: number } | null>(null)
 
   // Every row opens on its own terms — start each one at the summary.
   if (row && row.id !== shownId) {
@@ -200,6 +82,46 @@ export function RowDetailPanel({
     return () => window.removeEventListener("keydown", onKey)
   }, [row, onClose])
 
+  // Drag tracking lives on the window, not the handle: pointer capture can be
+  // lost mid-drag, and a missed pointerup would leave the panel resizing after
+  // the button is already released.
+  React.useEffect(() => {
+    if (!resizing) return
+    const onMove = (e: PointerEvent) => {
+      if (!drag.current) return
+      setWidth(
+        clampWidth(drag.current.startWidth + (drag.current.startX - e.clientX))
+      )
+    }
+    const stop = () => {
+      drag.current = null
+      setResizing(false)
+    }
+    window.addEventListener("pointermove", onMove)
+    window.addEventListener("pointerup", stop)
+    window.addEventListener("pointercancel", stop)
+    window.addEventListener("blur", stop)
+    const previousSelect = document.body.style.userSelect
+    const previousCursor = document.body.style.cursor
+    document.body.style.userSelect = "none"
+    document.body.style.cursor = "col-resize"
+    return () => {
+      window.removeEventListener("pointermove", onMove)
+      window.removeEventListener("pointerup", stop)
+      window.removeEventListener("pointercancel", stop)
+      window.removeEventListener("blur", stop)
+      document.body.style.userSelect = previousSelect
+      document.body.style.cursor = previousCursor
+    }
+  }, [resizing])
+
+  // A shrinking window can leave the panel past the half-width ceiling.
+  React.useEffect(() => {
+    const onResize = () => setWidth((w) => clampWidth(w))
+    window.addEventListener("resize", onResize)
+    return () => window.removeEventListener("resize", onResize)
+  }, [])
+
   return (
     <AnimatePresence initial={false}>
       {row && (
@@ -207,23 +129,51 @@ export function RowDetailPanel({
           key="row-detail"
           aria-label={`Details for ${row.id}`}
           initial={{ width: 0 }}
-          animate={{ width: PANEL_WIDTH }}
+          animate={{ width }}
           exit={{ width: 0 }}
           transition={
-            reducedMotion
+            reducedMotion || resizing
               ? { duration: 0 }
               : { type: "spring", bounce: 0, duration: 0.4 }
           }
-          className="shrink-0 overflow-hidden border-l bg-background"
+          className="relative shrink-0 overflow-hidden border-l bg-background"
         >
-          {/* Fixed width so the content never reflows while the panel moves. */}
           <div
-            className="flex h-full flex-col"
-            style={{ width: PANEL_WIDTH }}
-          >
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize details panel"
+            tabIndex={0}
+            onPointerDown={(e) => {
+              if (e.button !== 0) return
+              e.preventDefault()
+              drag.current = { startX: e.clientX, startWidth: width }
+              setResizing(true)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowLeft") setWidth((w) => clampWidth(w + RESIZE_STEP))
+              else if (e.key === "ArrowRight")
+                setWidth((w) => clampWidth(w - RESIZE_STEP))
+              else return
+              e.preventDefault()
+            }}
+            className={cn(
+              "absolute inset-y-0 left-0 z-20 w-1.5 cursor-col-resize touch-none transition-colors outline-none hover:bg-primary/30 focus-visible:bg-primary/40",
+              resizing && "bg-primary/40"
+            )}
+          />
+          {/* Explicit width so the content never reflows while the panel moves. */}
+          <div className="flex h-full flex-col" style={{ width }}>
             {/* Same padding and control size as the page header so both
                 bottom borders land on one line. */}
             <div className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-3">
+              <div className="min-w-0">
+                <p className="font-mono text-[11px] leading-tight text-muted-foreground">
+                  {row.id}
+                </p>
+                <p className="truncate text-sm leading-tight font-medium">
+                  {row.user.name}
+                </p>
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
@@ -232,14 +182,9 @@ export function RowDetailPanel({
               >
                 <X />
               </Button>
-              <span className="flex items-center gap-1.5 pr-1 text-xs text-muted-foreground">
-                <Kbd>Esc</Kbd> to close
-              </span>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
-              <p className="font-mono text-xs text-muted-foreground">{row.id}</p>
-              <p className="truncate text-sm font-medium">{row.user.name}</p>
-              <div className="mt-3 flex flex-wrap content-start items-start gap-1">
+              <div className="flex flex-wrap content-start items-start gap-1">
                 {TABS.map(({ key, icon: Icon }) => (
                   <button
                     key={key}
@@ -258,8 +203,8 @@ export function RowDetailPanel({
                   </button>
                 ))}
               </div>
-              <div className="mt-3 divide-y border-t pt-1">
-                <TabPanel tab={tab} row={row} />
+              <div className="mt-3 border-t pt-1">
+                <TabPanel tab={tab} row={row} related={related} />
               </div>
             </div>
           </div>

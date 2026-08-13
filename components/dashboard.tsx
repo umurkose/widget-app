@@ -145,29 +145,7 @@ export function Dashboard() {
             </TooltipTrigger>
             <TooltipContent>Toggle sidebar</TooltipContent>
           </Tooltip>
-          <NativeSelect
-            aria-label="Role"
-            value={role}
-            onChange={(e) => changeRole(e.target.value as Role)}
-          >
-            {ROLES.map((r) => (
-              <NativeSelectOption key={r} value={r}>
-                {r}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-          <Button
-            variant={filtersOpen ? "secondary" : "ghost"}
-            aria-expanded={filtersOpen}
-            onClick={() => setFiltersOpen((o) => !o)}
-          >
-            <ListFilter data-icon="inline-start" /> Filters
-            {countActiveFilters(filters) > 0 && (
-              <span className="flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground tabular-nums">
-                {countActiveFilters(filters)}
-              </span>
-            )}
-          </Button>
+          <span className="text-sm font-medium">Home</span>
         </div>
         <div className="flex items-center gap-2">
           {editing ? (
@@ -202,6 +180,34 @@ export function Dashboard() {
           <ModeToggle />
         </div>
       </header>
+      {/* Board controls sit with the board, not with the page chrome. */}
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2.5">
+        <NativeSelect
+          size="sm"
+          aria-label="Role"
+          value={role}
+          onChange={(e) => changeRole(e.target.value as Role)}
+        >
+          {ROLES.map((r) => (
+            <NativeSelectOption key={r} value={r}>
+              {r}
+            </NativeSelectOption>
+          ))}
+        </NativeSelect>
+        <Button
+          size="sm"
+          variant={filtersOpen ? "secondary" : "ghost"}
+          aria-expanded={filtersOpen}
+          onClick={() => setFiltersOpen((o) => !o)}
+        >
+          <ListFilter data-icon="inline-start" /> Filters
+          {countActiveFilters(filters) > 0 && (
+            <span className="flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground tabular-nums">
+              {countActiveFilters(filters)}
+            </span>
+          )}
+        </Button>
+      </div>
       <FiltersBar open={filtersOpen} filters={filters} onChange={setFilters} />
       <div className="min-h-0 flex-1 overflow-y-auto">
         <FiltersProvider value={filters}>

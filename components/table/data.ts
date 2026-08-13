@@ -6,6 +6,8 @@ export type CardBrand = "Visa" | "Mastercard" | "Amex" | "SEPA"
 
 export type Transaction = {
   id: string
+  /** Short, opaque key used in the detail URL (/table/<slug>). */
+  slug: string
   user: { name: string; email: string; initials: string }
   role: TransactionRole
   status: TransactionStatus
@@ -94,6 +96,18 @@ function hash(n: number): number {
   return (x >>> 0) % 100
 }
 
+const SLUG_ALPHABET =
+  "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+// Looks random, but is derived from the row index so server and client agree.
+function slugOf(i: number): string {
+  let out = ""
+  for (let k = 0; k < 7; k++) {
+    out += SLUG_ALPHABET[hash(i * 17 + k * 31) % SLUG_ALPHABET.length]
+  }
+  return out
+}
+
 function buildRow(i: number): Transaction {
   const seed = USERS[i % USERS.length]
   const brand = BRANDS[i % BRANDS.length]
@@ -102,6 +116,7 @@ function buildRow(i: number): Transaction {
   const tagStart = (i * 5) % TAG_POOL.length
   return {
     id: `TX-${90412 + i * 131}`,
+    slug: slugOf(i),
     user: {
       name: seed.name,
       email: emailOf(seed.name),

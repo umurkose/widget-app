@@ -8,7 +8,7 @@ import {
   Columns3,
   CreditCard,
   Eye,
-  FileDown,
+  FileSpreadsheet,
   Landmark,
   ListFilter,
   RefreshCw,
@@ -135,7 +135,7 @@ const ONLY_OPTIONS: {
   { key: "negative", label: "Outgoing", icon: ArrowUpRight },
 ]
 
-function pillClass(active: boolean) {
+export function pillClass(active: boolean) {
   return cn(
     "flex h-7 items-center gap-1.5 rounded-(--radius-control) px-2.5 text-xs font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
     active
@@ -223,7 +223,7 @@ export function GridToolbar({
         <Button
           className="ml-auto bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:text-green-950 dark:hover:bg-green-400"
         >
-          <FileDown data-icon="inline-start" /> Export
+          <FileSpreadsheet data-icon="inline-start" /> Export
         </Button>
       </div>
       <Separator />
