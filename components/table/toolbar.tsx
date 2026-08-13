@@ -137,7 +137,7 @@ const ONLY_OPTIONS: {
 
 export function pillClass(active: boolean) {
   return cn(
-    "flex h-7 items-center gap-1.5 rounded-(--radius-control) px-2.5 text-xs font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+    "flex h-7 shrink-0 items-center gap-1.5 rounded-(--radius-control) px-2.5 text-xs font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
     active
       ? "bg-primary text-primary-foreground"
       : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -159,7 +159,7 @@ function PillGroup<K extends string>({
     <div
       role="group"
       aria-label={label}
-      className="flex flex-wrap items-center gap-1"
+      className="flex shrink-0 items-center gap-1"
     >
       {options.map((o) => {
         const Icon = o.icon
@@ -326,7 +326,7 @@ export function TableFiltersBar({
       )}
     >
       <div className="overflow-hidden">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 bg-muted/30 px-4 py-2.5">
+        <div className="flex items-center gap-x-3 overflow-x-auto bg-muted/30 px-4 py-2.5">
           <PillGroup
             label="Role"
             options={ROLE_OPTIONS}
@@ -344,7 +344,7 @@ export function TableFiltersBar({
           <div
             role="group"
             aria-label="Only show"
-            className="flex flex-wrap items-center gap-1"
+            className="flex shrink-0 items-center gap-1"
           >
             {ONLY_OPTIONS.map((option) => {
               const Icon = option.icon
