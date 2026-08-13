@@ -7,7 +7,7 @@ import {
   Check,
   ChevronsUpDown,
   Copy,
-  Ellipsis,
+  Eye,
   RotateCcw,
   UserRound,
 } from "lucide-react"
@@ -102,7 +102,13 @@ export function TagsCell({ tags }: { tags: string[] }) {
   )
 }
 
-export function RowActions({ row }: { row: Transaction }) {
+export function RowActions({
+  row,
+  onView,
+}: {
+  row: Transaction
+  onView: () => void
+}) {
   const [copied, setCopied] = React.useState(false)
 
   const copyId = () => {
@@ -122,9 +128,17 @@ export function RowActions({ row }: { row: Transaction }) {
           />
         }
       >
-        <Ellipsis />
+        <Eye />
       </PopoverTrigger>
       <PopoverContent align="end" className="w-44 gap-0.5 p-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="justify-start"
+          onClick={onView}
+        >
+          <Eye data-icon="inline-start" /> View details
+        </Button>
         <Button
           variant="ghost"
           size="sm"

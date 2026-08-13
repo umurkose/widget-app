@@ -93,7 +93,7 @@ export function AppDock() {
       >
         <motion.span
           aria-hidden
-          className="absolute top-0 left-0 rounded-full bg-muted"
+          className="absolute top-0 left-0 rounded-(--radius-control) bg-muted"
           style={{ x, y, width: springSize, height: springSize, scaleX, scaleY, opacity }}
         />
         {items.map((item) => {
@@ -101,7 +101,10 @@ export function AppDock() {
           const Icon = item.icon
 
           return (
-            <DockIcon key={item.href}>
+            <DockIcon
+              key={item.href}
+              className="rounded-(--radius-control)"
+            >
               <Tooltip>
                 <TooltipTrigger
                   render={
@@ -110,7 +113,7 @@ export function AppDock() {
                       aria-label={item.label}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "absolute inset-0 rounded-full transition-colors",
+                        "absolute inset-0 rounded-(--radius-control) transition-colors",
                         isActive
                           ? "text-foreground"
                           : "text-muted-foreground hover:text-foreground"

@@ -18,7 +18,8 @@ import {
   type SortState,
 } from "@/components/table/cells"
 import { GridFooter } from "@/components/table/grid-footer"
-import { Sparkline } from "@/components/table/sparkline"
+import { RowDetailPanel } from "@/components/table/row-detail-panel"
+import { Sparkline, trendClass } from "@/components/table/sparkline"
 import {
   countActiveTableFilters,
   DEFAULT_TABLE_FILTERS,
@@ -88,7 +89,7 @@ function sortValue(row: Transaction, key: SortKey): string | number {
   }
 }
 
-export function DataGrid() {
+export function DataGrid({ header }: { header?: React.ReactNode }) {
   const [rows, setRows] = React.useState<Transaction[]>(TRANSACTIONS)
   const [search, setSearch] = React.useState("")
   const [status, setStatus] = React.useState("all")
@@ -105,6 +106,7 @@ export function DataGrid() {
     DEFAULT_TABLE_FILTERS
   )
   const [filtersOpen, setFiltersOpen] = React.useState(true)
+  const [activeId, setActiveId] = React.useState<string | null>(null)
 
   const filtered = React.useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -185,8 +187,19 @@ export function DataGrid() {
     )
   }
 
+  // Derived, so deleting the open row closes its panel on its own.
+  const activeRow = rows.find((row) => row.id === activeId) ?? null
+
+  // Clicks on a checkbox, action button or link belong to that control.
+  const openRow = (event: React.MouseEvent<HTMLTableRowElement>, id: string) => {
+    const target = event.target as HTMLElement
+    if (target.closest('button, a, input, [role="checkbox"]')) return
+    setActiveId(id)
+  }
+
   const deleteSelected = () => {
     setRows((prev) => prev.filter((row) => !selected.has(row.id)))
+    if (activeId && selected.has(activeId)) setActiveId(null)
     setSelected(new Set())
     setPage(1)
   }
@@ -205,7 +218,11 @@ export function DataGrid() {
   ).length
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 flex-1">
+      {/* Everything left of the panel narrows together: the page header,
+          toolbar, filter bar, rows and footer all shift when a row opens. */}
+      <div className="flex min-w-0 flex-1 flex-col">
+      {header}
       <GridToolbar
         search={search}
         onSearchChange={(value) => {
@@ -327,8 +344,11 @@ export function DataGrid() {
                 <TableRow
                   key={row.id}
                   data-state={isSelected ? "selected" : undefined}
+                  onClick={(event) => openRow(event, row.id)}
                   className={cn(
-                    !isSelected && index % 2 === 1 && "bg-muted/40"
+                    "cursor-pointer",
+                    !isSelected && index % 2 === 1 && "bg-muted/40",
+                    activeId === row.id && "bg-muted"
                   )}
                 >
                   <TableCell className="w-10 pl-4">
@@ -386,7 +406,7 @@ export function DataGrid() {
                     <TableCell>
                       <Sparkline
                         data={row.activity}
-                        className="text-muted-foreground"
+                        className={trendClass(row.activity)}
                       />
                     </TableCell>
                   )}
@@ -418,7 +438,7 @@ export function DataGrid() {
                     {row.lastActive}
                   </TableCell>
                   <TableCell className="w-10 pr-4 text-right">
-                    <RowActions row={row} />
+                    <RowActions row={row} onView={() => setActiveId(row.id)} />
                   </TableCell>
                 </TableRow>
               )
@@ -448,6 +468,8 @@ export function DataGrid() {
           setPage(1)
         }}
       />
+      </div>
+      <RowDetailPanel row={activeRow} onClose={() => setActiveId(null)} />
     </div>
   )
 }
