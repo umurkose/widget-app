@@ -98,7 +98,7 @@ export type Preferences = {
 export const DEFAULT_PREFERENCES: Preferences = {
   accent: "mono",
   theme: "default",
-  font: "geist",
+  font: "serif",
   textSize: "lg",
   radius: "lg",
 }
