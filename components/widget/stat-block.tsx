@@ -11,7 +11,14 @@ export function StatDelta({
 }) {
   const Arrow = direction === "down" ? ArrowDownRight : ArrowUpRight
   return (
-    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+    <span
+      className={cn(
+        "flex items-center gap-1 text-xs font-medium",
+        direction === "down"
+          ? "text-destructive"
+          : "text-green-600 dark:text-green-500"
+      )}
+    >
       <Arrow aria-hidden className="size-3 shrink-0" />
       {children}
     </span>
@@ -38,7 +45,7 @@ export function StatBlock({
   return (
     <div className={cn("flex flex-col items-start", className)}>
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="font-heading mt-1.5 text-2xl leading-none font-semibold tracking-tight">
+      <span className="font-accent mt-1.5 text-2xl leading-none font-semibold tracking-tight tabular-nums">
         {value}
       </span>
       {delta && (
@@ -71,7 +78,7 @@ export function StatRow({
         className
       )}
     >
-      <span className="font-heading text-xl leading-none font-semibold tracking-tight">
+      <span className="font-accent text-xl leading-none font-semibold tracking-tight tabular-nums">
         {value}
       </span>
       {right}

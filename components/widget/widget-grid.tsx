@@ -31,6 +31,23 @@ type Resolution =
   | { kind: "swap"; other: PlacedWidget }
   | { kind: "blocked" }
 
+// Deterministic per-widget jiggle: same widget always wobbles the same way,
+// but no two widgets share a period, so the grid never pulses in unison.
+function jiggleOf(id: string) {
+  let h = 2166136261
+  for (let i = 0; i < id.length; i++) {
+    h ^= id.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  const n = Math.abs(h)
+  return {
+    tilt: 0.4 + ((n >>> 3) % 5) * 0.06,
+    lift: 0.5 + ((n >>> 7) % 4) * 0.15,
+    period: 0.19 + ((n >>> 11) % 6) * 0.011,
+    delay: (((n >>> 17) % 12) * 0.018),
+  }
+}
+
 export function WidgetGrid({
   items,
   onChange,
@@ -214,11 +231,14 @@ export function WidgetGrid({
         {announcement}
       </span>
       <AnimatePresence initial={false} mode="popLayout">
-        {items.map((w, i) => {
+        {items.map((w) => {
           const def = getWidget(w.id)
           if (!def) return null
           const Widget = def.component
           const jiggling = editing && draggingId !== w.id
+          // iOS-style jiggle: every widget gets its own amplitude, period and
+          // phase from its id, so they drift apart instead of swinging as one.
+          const wobble = jiggleOf(w.id)
           return (
             <motion.div
               key={w.id}
@@ -233,20 +253,30 @@ export function WidgetGrid({
               animate={{
                 opacity: 1,
                 scale: 1,
-                rotate: jiggling ? [-0.35, 0.35] : 0,
+                rotate: jiggling ? [-wobble.tilt, wobble.tilt] : 0,
+                y: jiggling ? [-wobble.lift, wobble.lift] : 0,
               }}
               exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.18 } }}
               transition={{
                 ...reflowSpring,
                 rotate: jiggling
                   ? {
-                      duration: 0.26,
+                      duration: wobble.period,
                       repeat: Infinity,
                       repeatType: "mirror",
                       ease: "easeInOut",
-                      delay: (i % 4) * 0.07,
+                      delay: wobble.delay,
                     }
-                  : { duration: 0.2 },
+                  : { duration: 0.18, ease: "easeOut" },
+                y: jiggling
+                  ? {
+                      duration: wobble.period * 1.35,
+                      repeat: Infinity,
+                      repeatType: "mirror",
+                      ease: "easeInOut",
+                      delay: wobble.delay / 2,
+                    }
+                  : { duration: 0.18, ease: "easeOut" },
               }}
               drag={editing}
               dragConstraints={gridRef}

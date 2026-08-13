@@ -138,20 +138,23 @@ export const WIDGETS: WidgetDef[] = [
 ]
 
 export const DEFAULT_LAYOUTS: Record<Role, PlacedWidget[]> = {
+  // Every role opens on full-size widgets: the top row fills slots 0-3, the
+  // second row 8-11 (a full widget covers its slot and the one below it).
   Admin: [
     { id: "clock", slot: 0, size: "full" },
     { id: "revenue", slot: 1, size: "full" },
     { id: "login-count", slot: 2, size: "full" },
     { id: "auth-logs", slot: 3, size: "full" },
     { id: "payment-logs", slot: 8, size: "full" },
-    { id: "active-users", slot: 9, size: "half" },
-    { id: "audit-log", slot: 13, size: "half" },
+    { id: "active-users", slot: 9, size: "full" },
+    { id: "api-usage", slot: 10, size: "full" },
+    { id: "audit-log", slot: 11, size: "full" },
   ],
   Finance: [
     { id: "clock", slot: 0, size: "full" },
     { id: "revenue", slot: 1, size: "full" },
     { id: "payment-logs", slot: 2, size: "full" },
-    { id: "transfers", slot: 8, size: "full" },
+    { id: "transfers", slot: 3, size: "full" },
   ],
   Marketing: [
     { id: "clock", slot: 0, size: "full" },
@@ -164,14 +167,14 @@ export const DEFAULT_LAYOUTS: Record<Role, PlacedWidget[]> = {
     { id: "clock", slot: 0, size: "full" },
     { id: "api-usage", slot: 1, size: "full" },
     { id: "error-logs", slot: 2, size: "full" },
-    { id: "login-count", slot: 3, size: "half" },
-    { id: "auth-logs", slot: 7, size: "half" },
+    { id: "login-count", slot: 3, size: "full" },
+    { id: "auth-logs", slot: 8, size: "full" },
   ],
   Support: [
     { id: "clock", slot: 0, size: "full" },
     { id: "auth-logs", slot: 1, size: "full" },
-    { id: "active-users", slot: 2, size: "half" },
-    { id: "transfers", slot: 6, size: "half" },
+    { id: "active-users", slot: 2, size: "full" },
+    { id: "transfers", slot: 3, size: "full" },
   ],
 }
 

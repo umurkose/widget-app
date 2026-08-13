@@ -2,6 +2,7 @@
 
 import { Users } from "lucide-react"
 
+import { Progress } from "@/components/ui/progress"
 import { useFilters, type RangeKey } from "@/components/widget/filters"
 import { StatBlock, StatRow } from "@/components/widget/stat-block"
 import { WidgetShell } from "@/components/widget/widget-shell"
@@ -9,9 +10,9 @@ import { WidgetShell } from "@/components/widget/widget-shell"
 const ONLINE_NOW = "3,412"
 
 const SEGMENTS = [
-  { name: "Web", share: 58, mark: "bg-primary" },
-  { name: "Mobile", share: 32, mark: "bg-primary/50" },
-  { name: "API", share: 10, mark: "bg-primary/20" },
+  { name: "Web", share: 58, count: "1,979", mark: "bg-primary" },
+  { name: "Mobile", share: 32, count: "1,092", mark: "bg-primary/50" },
+  { name: "API", share: 10, count: "341", mark: "bg-primary/20" },
 ]
 
 type ActiveUsersRangeData = {
@@ -56,13 +57,17 @@ export function ActiveUsersWidget({ compact }: { compact?: boolean }) {
         <StatRow
           value={ONLINE_NOW}
           right={
-            <div aria-hidden className="flex h-1.5 w-20 gap-0.5">
+            <div className="flex w-28 shrink-0 flex-col gap-1">
               {SEGMENTS.map((segment) => (
-                <div
-                  key={segment.name}
-                  className={`rounded-full ${segment.mark}`}
-                  style={{ width: `${segment.share}%` }}
-                />
+                <div key={segment.name} className="flex items-center gap-1.5">
+                  <span className="w-10 shrink-0 text-[10px] text-muted-foreground">
+                    {segment.name}
+                  </span>
+                  <Progress value={segment.share} className="flex-1" />
+                  <span className="font-accent w-6 shrink-0 text-right text-[10px] text-muted-foreground tabular-nums">
+                    {segment.share}
+                  </span>
+                </div>
               ))}
             </div>
           }
@@ -82,30 +87,20 @@ export function ActiveUsersWidget({ compact }: { compact?: boolean }) {
           detail={d.peak}
         />
         <div className="shrink-0 space-y-1.5">
-          <div
-            aria-hidden
-            className="flex h-2 gap-0.5 overflow-hidden rounded-full"
-          >
-            {SEGMENTS.map((segment) => (
-              <div
-                key={segment.name}
-                className={`rounded-full ${segment.mark}`}
-                style={{ width: `${segment.share}%` }}
-              />
-            ))}
-          </div>
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-            {SEGMENTS.map((segment) => (
-              <span key={segment.name} className="flex items-center gap-1">
-                <span
-                  aria-hidden
-                  className={`size-2 shrink-0 rounded-full ${segment.mark}`}
-                />
-                <span>{segment.name}</span>
-                <span className="tabular-nums">{segment.share}%</span>
+          {SEGMENTS.map((segment) => (
+            <div key={segment.name} className="flex items-center gap-2">
+              <span className="w-12 shrink-0 text-[11px] text-muted-foreground">
+                {segment.name}
               </span>
-            ))}
-          </div>
+              <Progress value={segment.share} className="flex-1" />
+              <span className="font-accent w-14 shrink-0 text-right text-[11px] text-muted-foreground tabular-nums">
+                {segment.count}
+              </span>
+              <span className="font-accent w-8 shrink-0 text-right text-[11px] font-medium tabular-nums">
+                {segment.share}%
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </WidgetShell>

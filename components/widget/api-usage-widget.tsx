@@ -2,6 +2,7 @@
 
 import { Activity } from "lucide-react"
 
+import { Progress } from "@/components/ui/progress"
 import { useFilters, type RangeKey } from "@/components/widget/filters"
 import { StatBlock, StatRow } from "@/components/widget/stat-block"
 import { WidgetShell } from "@/components/widget/widget-shell"
@@ -95,8 +96,9 @@ type ApiRangeData = {
   value: string
   delta: string
   dir: "up" | "down"
-  p95: string
   err: string
+  quota: number
+  quotaLabel: string
   chart: ReturnType<typeof buildChart>
   axis: [string, string]
 }
@@ -107,8 +109,9 @@ const TODAY: ApiRangeData = {
   value: "2.4M",
   delta: "+11% vs prior 24h",
   dir: "up",
-  p95: "p95 182 ms",
-  err: "err 0.42%",
+  err: "0.42% errors",
+  quota: 48,
+  quotaLabel: "2.4M of 5M requests",
   chart: buildChart(TODAY_POINTS),
   axis: ["24h ago", "now"],
 }
@@ -122,8 +125,9 @@ const RANGE_DATA: Record<RangeKey, ApiRangeData> = {
     value: "2.1M",
     delta: "-6% vs prior 24h",
     dir: "down",
-    p95: "p95 190 ms",
-    err: "err 0.51%",
+    err: "0.51% errors",
+    quota: 42,
+    quotaLabel: "2.1M of 5M requests",
     chart: buildChart(YESTERDAY_POINTS),
     axis: ["00:00", "24:00"],
   },
@@ -133,8 +137,9 @@ const RANGE_DATA: Record<RangeKey, ApiRangeData> = {
     value: "15.8M",
     delta: "+9% vs prior 7 days",
     dir: "up",
-    p95: "p95 185 ms",
-    err: "err 0.44%",
+    err: "0.44% errors",
+    quota: 63,
+    quotaLabel: "15.8M of 25M requests",
     chart: buildChart(WEEK_POINTS),
     axis: ["7d ago", "now"],
   },
@@ -144,8 +149,9 @@ const RANGE_DATA: Record<RangeKey, ApiRangeData> = {
     value: "30.6M",
     delta: "+7% vs prior 14 days",
     dir: "up",
-    p95: "p95 187 ms",
-    err: "err 0.47%",
+    err: "0.47% errors",
+    quota: 61,
+    quotaLabel: "30.6M of 50M requests",
     chart: buildChart(FORTNIGHT_POINTS),
     axis: ["14d ago", "now"],
   },
@@ -162,7 +168,12 @@ export function ApiUsageWidget({ compact }: { compact?: boolean }) {
           value={d.value}
           right={
             <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground">{d.p95}</span>
+              <div className="flex w-16 shrink-0 flex-col gap-1">
+                <Progress value={d.quota} />
+                <span className="font-accent text-[10px] text-muted-foreground tabular-nums">
+                  {d.quota}%
+                </span>
+              </div>
               <div aria-hidden className="h-8 w-20 shrink-0">
                 <svg
                   viewBox="0 0 100 32"
@@ -196,8 +207,15 @@ export function ApiUsageWidget({ compact }: { compact?: boolean }) {
           value={d.value}
           delta={d.delta}
           direction={d.dir}
-          detail={`${d.p95} · ${d.err}`}
+          detail={d.err}
         />
+        <div className="shrink-0 space-y-1">
+          <div className="flex items-baseline justify-between gap-2 text-[11px] text-muted-foreground">
+            <span>{d.quotaLabel}</span>
+            <span className="font-accent tabular-nums">{d.quota}%</span>
+          </div>
+          <Progress value={d.quota} />
+        </div>
         <div className="shrink-0 space-y-1">
           <div className="relative">
             <svg
