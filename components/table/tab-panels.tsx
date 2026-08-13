@@ -147,7 +147,7 @@ export function TabPanel({
             <Stat label="Amount" value={formatAmount(row.amount, row.currency)} />
             <Stat label="Usage" value={`${row.usage}%`} />
           </div>
-          <div className="divide-y">
+          <div className="flex flex-col gap-3">
             <div>
               <KeyValue label="Status">
                 <StatusBadge status={row.status} />
@@ -325,7 +325,7 @@ export function TabPanel({
         },
       ]
       return (
-        <div className="divide-y">
+        <div className="flex flex-col gap-3">
           <div>
             <KeyValue label="Brand">{row.method.brand}</KeyValue>
             <KeyValue label="Card">•••• {row.method.last4}</KeyValue>
@@ -397,7 +397,7 @@ export function TabPanel({
         },
       ]
       return (
-        <div className="divide-y">
+        <div className="flex flex-col gap-3">
           <div>
             <div className="flex items-center gap-2 py-1.5">
               <Avatar size="sm">
@@ -487,7 +487,7 @@ export function TabPanel({
         },
       ]
       return (
-        <div className="divide-y">
+        <div className="flex flex-col gap-3">
           <div className="pb-2">
             <div className="flex items-center justify-between gap-2 py-1.5">
               <span className="text-xs text-muted-foreground">Quota</span>
@@ -547,7 +547,7 @@ export function TabPanel({
         },
       ]
       return (
-        <div className="divide-y">
+        <div className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-1 py-1.5">
             {row.tags.map((tag) => (
               <Badge key={tag} variant="secondary">

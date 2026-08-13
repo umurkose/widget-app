@@ -203,7 +203,7 @@ export function RowDetailPanel({
                   </button>
                 ))}
               </div>
-              <div className="mt-3 border-t pt-1">
+              <div className="mt-3">
                 <TabPanel tab={tab} row={row} related={related} />
               </div>
             </div>
