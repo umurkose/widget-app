@@ -54,14 +54,6 @@ function KeyValue({
   )
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="pt-3 pb-1.5 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-      {children}
-    </p>
-  )
-}
-
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex-1 rounded-md border px-2 py-1.5">
@@ -167,7 +159,6 @@ export function TabPanel({
               <KeyValue label="Last active">{row.lastActive}</KeyValue>
             </div>
             <div>
-              <SectionTitle>Signals</SectionTitle>
               <PanelGrid
                 rows={signals}
                 columns={columns}
@@ -244,7 +235,6 @@ export function TabPanel({
             <Stat label="Total" value={total} />
             <Stat label="Avg" value={Math.round(total / row.activity.length)} />
           </div>
-          <SectionTitle>Per hour</SectionTitle>
           <PanelGrid
             rows={buckets}
             columns={columns}
@@ -343,7 +333,6 @@ export function TabPanel({
             <KeyValue label="Auto-renew">{row.autoRenew ? "On" : "Off"}</KeyValue>
           </div>
           <div>
-            <SectionTitle>Attempts</SectionTitle>
             <PanelGrid
               rows={attempts}
               columns={columns}
@@ -433,7 +422,6 @@ export function TabPanel({
             </KeyValue>
           </div>
           <div>
-            <SectionTitle>Other transactions</SectionTitle>
             <PanelGrid
               rows={related}
               columns={columns}
@@ -510,7 +498,6 @@ export function TabPanel({
             <Progress value={row.usage} />
           </div>
           <div>
-            <SectionTitle>By endpoint</SectionTitle>
             <PanelGrid
               rows={endpoints}
               columns={columns}
@@ -569,7 +556,6 @@ export function TabPanel({
             ))}
           </div>
           <div>
-            <SectionTitle>Applied by</SectionTitle>
             <PanelGrid
               rows={tagRows}
               columns={columns}

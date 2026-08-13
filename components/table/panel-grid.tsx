@@ -119,8 +119,10 @@ export function PanelGrid<T>({
   const canReset = query !== "" || active.size > 0
 
   return (
-    <div className="overflow-hidden rounded-md border">
-      <div className="flex flex-wrap items-center gap-2 px-2 py-2">
+    /* Controls stand apart from the grid: search, a separator, the filter
+       row, then the table in its own box. */
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -139,7 +141,7 @@ export function PanelGrid<T>({
         </Button>
       </div>
       <Separator />
-      <div className="flex flex-wrap items-center gap-1.5 px-2 py-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {filters.length > 0 && (
           <div className="flex items-center gap-0.5">
             <Button
@@ -217,7 +219,7 @@ export function PanelGrid<T>({
           )}
         >
           <div className="overflow-hidden">
-            <div className="flex flex-wrap items-center gap-1 border-t bg-muted/30 px-2 py-1.5">
+            <div className="flex flex-wrap items-center gap-1 rounded-md bg-muted/40 px-2 py-1.5">
               {filters.map((filter) => (
                 <button
                   key={filter.key}
@@ -253,7 +255,7 @@ export function PanelGrid<T>({
         </div>
       )}
 
-      <div className="overflow-x-auto border-t">
+      <div className="overflow-x-auto rounded-md border">
         <Table className="text-xs">
           <TableHeader className="[&_tr]:border-b">
             <TableRow className="hover:bg-transparent">
@@ -330,9 +332,7 @@ export function PanelGrid<T>({
       </div>
 
       {caption && (
-        <p className="border-t px-2 py-1 text-[10px] text-muted-foreground">
-          {caption}
-        </p>
+        <p className="text-[10px] text-muted-foreground">{caption}</p>
       )}
     </div>
   )
