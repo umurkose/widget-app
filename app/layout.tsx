@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Fraunces, Geist, Geist_Mono, Inter } from "next/font/google";
+import { AppDock } from "@/components/app-dock";
+import { PreferencesProvider } from "@/components/preferences-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { preferencesInitScript } from "@/lib/preferences";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,9 +39,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${fraunces.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        {/* Applies the saved accent/theme/font/text-size before first paint. */}
+        <script
+          dangerouslySetInnerHTML={{ __html: preferencesInitScript() }}
+        />
+      </head>
       <body className="flex h-full flex-col overflow-hidden font-sans">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TooltipProvider>{children}</TooltipProvider>
+          <PreferencesProvider>
+            <TooltipProvider>
+              {children}
+              <AppDock />
+            </TooltipProvider>
+          </PreferencesProvider>
         </ThemeProvider>
       </body>
     </html>
