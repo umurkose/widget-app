@@ -75,7 +75,7 @@ function PlanOptions({
           <Field key={option.id} orientation="horizontal">
             <RadioGroupItem value={option.id} id={id} />
             <FieldContent>
-              <FieldLabel htmlFor={id} className="items-center gap-1.5">
+              <FieldLabel htmlFor={id} className="font-accent items-center gap-1.5">
                 {option.label}
                 {"current" in option && option.current && (
                   <Badge variant="secondary">Current</Badge>
@@ -83,7 +83,7 @@ function PlanOptions({
               </FieldLabel>
               <FieldDescription>{option.description}</FieldDescription>
             </FieldContent>
-            <span className="text-sm font-medium tabular-nums">
+            <span className="font-accent text-sm font-medium tabular-nums">
               {period === "monthly" ? option.monthly : option.yearly}
               <span className="font-normal text-muted-foreground">
                 {period === "monthly" ? "/mo" : "/yr"}

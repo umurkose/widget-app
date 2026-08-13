@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Geist, Geist_Mono, Inter } from "next/font/google";
 import { AppDock } from "@/components/app-dock";
+import { AppShell } from "@/components/app-shell";
 import { PreferencesProvider } from "@/components/preferences-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -49,7 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <PreferencesProvider>
             <TooltipProvider>
-              {children}
+              <AppShell>{children}</AppShell>
               <AppDock />
             </TooltipProvider>
           </PreferencesProvider>

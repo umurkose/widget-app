@@ -2,12 +2,11 @@
 
 import * as React from "react"
 import { MotionConfig } from "motion/react"
-import { Check, LayoutGrid, ListFilter, PanelLeft, Plus, X } from "lucide-react"
+import { Check, LayoutGrid, ListFilter, Plus, X } from "lucide-react"
 
 import { AddWidgetDialog } from "@/components/add-widget-dialog"
+import { HeaderActions } from "@/components/app-shell"
 import { FiltersBar } from "@/components/filters-bar"
-import { ModeToggle } from "@/components/mode-toggle"
-import { ThemePreferences } from "@/components/theme-preferences"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,11 +23,6 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@/components/ui/native-select"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import {
   countActiveFilters,
   DEFAULT_FILTERS,
@@ -133,53 +127,36 @@ export function Dashboard() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <header className="flex shrink-0 items-center justify-between gap-2 border-b bg-background px-4 py-3">
-        <div className="flex items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button variant="ghost" size="icon" aria-label="Toggle sidebar" />
-              }
-            >
-              <PanelLeft />
-            </TooltipTrigger>
-            <TooltipContent>Toggle sidebar</TooltipContent>
-          </Tooltip>
-          <span className="font-accent text-sm font-medium">Home</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {editing ? (
-            <div
-              key="editing"
-              className="flex items-center gap-2 animate-in fade-in-0 slide-in-from-right-2"
-            >
-              <span className="mr-1 hidden items-center gap-1.5 text-xs text-muted-foreground lg:flex">
-                <Kbd>Esc</Kbd> to close
-              </span>
-              <Button variant="outline" onClick={() => setPickerOpen(true)}>
-                <LayoutGrid data-icon="inline-start" /> Widgets
-              </Button>
-              <Button variant="outline" onClick={requestClose}>
-                <X data-icon="inline-start" /> Close
-              </Button>
-              <Button onClick={saveEdit}>
-                <Check data-icon="inline-start" /> Save
-              </Button>
-            </div>
-          ) : (
-            <div
-              key="viewing"
-              className="flex items-center animate-in fade-in-0 slide-in-from-right-2"
-            >
-              <Button onClick={enterEdit}>
-                <Plus data-icon="inline-start" /> Widget
-              </Button>
-            </div>
-          )}
-          <ThemePreferences />
-          <ModeToggle />
-        </div>
-      </header>
+      <HeaderActions>
+        {editing ? (
+          <div
+            key="editing"
+            className="flex items-center gap-2 animate-in fade-in-0 slide-in-from-right-2"
+          >
+            <span className="mr-1 hidden items-center gap-1.5 text-xs text-muted-foreground lg:flex">
+              <Kbd>Esc</Kbd> to close
+            </span>
+            <Button variant="outline" onClick={() => setPickerOpen(true)}>
+              <LayoutGrid data-icon="inline-start" /> Widgets
+            </Button>
+            <Button variant="outline" onClick={requestClose}>
+              <X data-icon="inline-start" /> Close
+            </Button>
+            <Button onClick={saveEdit}>
+              <Check data-icon="inline-start" /> Save
+            </Button>
+          </div>
+        ) : (
+          <div
+            key="viewing"
+            className="flex items-center animate-in fade-in-0 slide-in-from-right-2"
+          >
+            <Button onClick={enterEdit}>
+              <Plus data-icon="inline-start" /> Widget
+            </Button>
+          </div>
+        )}
+      </HeaderActions>
       {/* Board controls sit with the board, not with the page chrome. */}
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2.5">
         <NativeSelect

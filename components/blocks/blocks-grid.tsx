@@ -10,7 +10,7 @@ import { WorkspaceBlock } from "@/components/blocks/workspace-block"
 
 export function BlocksGrid() {
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-24 md:p-6 md:pb-24">
+    <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-24">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <WorkspaceBlock className="lg:col-span-5" />
         <NotificationsBlock className="lg:col-span-4" />

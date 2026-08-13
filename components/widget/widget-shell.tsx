@@ -26,7 +26,7 @@ export function WidgetShell({
       )}
     >
       <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground">
-        <span className="text-[11px] font-medium tracking-wider uppercase">
+        <span className="font-accent text-[11px] font-medium tracking-wider uppercase">
           {title}
         </span>
         {accessory && (

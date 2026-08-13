@@ -17,6 +17,7 @@ import {
   type SortKey,
   type SortState,
 } from "@/components/table/cells"
+import { DetailPanel } from "@/components/app-shell"
 import { GridFooter } from "@/components/table/grid-footer"
 import { RowDetailPanel } from "@/components/table/row-detail-panel"
 import { Sparkline, trendClass } from "@/components/table/sparkline"
@@ -90,13 +91,7 @@ function sortValue(row: Transaction, key: SortKey): string | number {
   }
 }
 
-export function DataGrid({
-  header,
-  initialSlug,
-}: {
-  header?: React.ReactNode
-  initialSlug?: string
-}) {
+export function DataGrid({ initialSlug }: { initialSlug?: string }) {
   const [rows, setRows] = React.useState<Transaction[]>(TRANSACTIONS)
   const [search, setSearch] = React.useState("")
   const [status, setStatus] = React.useState("all")
@@ -265,11 +260,7 @@ export function DataGrid({
   ).length
 
   return (
-    <div className="flex min-h-0 flex-1">
-      {/* Everything left of the panel narrows together: the page header,
-          toolbar, filter bar, rows and footer all shift when a row opens. */}
-      <div className="flex min-w-0 flex-1 flex-col">
-      {header}
+    <div className="flex min-h-0 flex-1 flex-col">
       <GridToolbar
         search={search}
         onSearchChange={(value) => {
@@ -528,21 +519,23 @@ export function DataGrid({
           simulateFetch()
         }}
       />
-      </div>
-      <RowDetailPanel
-        row={activeRow}
-        related={
-          activeRow
-            ? rows
-                .filter(
-                  (r) =>
-                    r.user.email === activeRow.user.email && r.id !== activeRow.id
-                )
-                .slice(0, 8)
-            : []
-        }
-        onClose={() => openDetail(null)}
-      />
+      <DetailPanel>
+        <RowDetailPanel
+          row={activeRow}
+          related={
+            activeRow
+              ? rows
+                  .filter(
+                    (r) =>
+                      r.user.email === activeRow.user.email &&
+                      r.id !== activeRow.id
+                  )
+                  .slice(0, 8)
+              : []
+          }
+          onClose={() => openDetail(null)}
+        />
+      </DetailPanel>
     </div>
   )
 }
