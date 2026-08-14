@@ -95,8 +95,9 @@ export function AppDock() {
     if (!dock || !icon) return
 
     const dockBounds = dock.getBoundingClientRect()
-    // The DockIcon box, not the inner span: its centre is the true centre.
-    const iconBounds = (icon.parentElement?.parentElement ?? icon).getBoundingClientRect()
+    // The span fills the DockIcon box, so its rect is the icon's frame. Its
+    // wrapper holds only an absolutely-positioned link and measures 0x0.
+    const iconBounds = icon.getBoundingClientRect()
     // Absolute children sit inside the dock's border, so discount it.
     const cx =
       iconBounds.left + iconBounds.width / 2 - dockBounds.left - dock.clientLeft
