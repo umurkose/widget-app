@@ -9,21 +9,18 @@ import {
   FileSpreadsheet,
   ListFilter,
   RotateCcw,
-  Search,
   X,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { pillClass } from "@/components/table/toolbar"
+import { GridSearchBar, pillClass } from "@/components/table/toolbar"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
 import {
   Table,
   TableBody,
@@ -52,9 +49,9 @@ export type PanelFilter<T> = {
 }
 
 /**
- * The panel's grid wears the page grid's controls: search opposite a green
- * Export, a separator, then Filters / reset / row count / Columns, with the
- * one-click filter pills underneath.
+ * The panel's grid mirrors the page grid: Filters / Columns / Export on top,
+ * the one-click pills below them, then a rounded search bar carrying the row
+ * count, and finally the table.
  */
 export function PanelGrid<T>({
   rows,
@@ -119,28 +116,9 @@ export function PanelGrid<T>({
   const canReset = query !== "" || active.size > 0
 
   return (
-    /* Controls stand apart from the grid: search, a separator, the filter
-       row, then the table in its own box. */
+    /* Controls stand apart from the grid: filters on top, then search, then
+       the table in its own box. */
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search rows"
-            aria-label="Search rows"
-            className="h-7 w-full pl-7 text-xs"
-          />
-        </div>
-        <Button
-          size="sm"
-          className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:text-green-950 dark:hover:bg-green-400"
-        >
-          <FileSpreadsheet data-icon="inline-start" /> Export
-        </Button>
-      </div>
-      <Separator />
       <div className="flex flex-wrap items-center gap-1.5">
         {filters.length > 0 && (
           <div className="flex items-center gap-0.5">
@@ -174,9 +152,6 @@ export function PanelGrid<T>({
           </div>
         )}
         <div className="ml-auto flex items-center gap-1.5">
-          <span className="text-[11px] text-muted-foreground tabular-nums">
-            {sorted.length} {sorted.length === 1 ? "row" : "rows"}
-          </span>
           {optional.length > 0 && (
             <Popover>
               <PopoverTrigger render={<Button variant="outline" size="sm" />}>
@@ -208,6 +183,12 @@ export function PanelGrid<T>({
               </PopoverContent>
             </Popover>
           )}
+          <Button
+            size="sm"
+            className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:text-green-950 dark:hover:bg-green-400"
+          >
+            <FileSpreadsheet data-icon="inline-start" /> Export
+          </Button>
         </div>
       </div>
 
@@ -254,6 +235,13 @@ export function PanelGrid<T>({
           </div>
         </div>
       )}
+
+      <GridSearchBar
+        variant="boxed"
+        search={query}
+        onSearchChange={setQuery}
+        rowCount={sorted.length}
+      />
 
       <div className="overflow-x-auto rounded-md border">
         <Table className="text-xs">

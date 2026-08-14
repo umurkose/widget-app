@@ -112,7 +112,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <SlotsContext value={slots}>
       <div className="h-full bg-muted p-6">
-        <main className="flex h-full overflow-hidden rounded-2xl border bg-background shadow-sm">
+        <main className="relative flex h-full overflow-hidden rounded-2xl border bg-background shadow-sm">
           <div className="flex min-w-0 flex-1 flex-col">
             <header className="relative flex shrink-0 items-center justify-between gap-2 border-b bg-background px-4 py-3">
               <div className="flex items-center gap-2">

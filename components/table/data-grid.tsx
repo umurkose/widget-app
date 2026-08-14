@@ -28,6 +28,7 @@ import { Sparkline, trendClass } from "@/components/table/sparkline"
 import {
   countActiveTableFilters,
   DEFAULT_TABLE_FILTERS,
+  GridSearchBar,
   GridToolbar,
   SelectionBar,
   TableFiltersBar,
@@ -312,20 +313,6 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
         style={givingRoom ? { height: gridHeight } : undefined}
       >
       <GridToolbar
-        search={search}
-        onSearchChange={(value) => {
-          setSearch(value)
-          pruneSelected(value, status, filters)
-          setPage(1)
-          simulateFetch()
-        }}
-        status={status}
-        onStatusChange={(value) => {
-          setStatus(value)
-          pruneSelected(search, value, filters)
-          setPage(1)
-          simulateFetch()
-        }}
         filtersOpen={filtersOpen}
         onFiltersOpenChange={setFiltersOpen}
         activeFilterCount={countActiveTableFilters(filters)}
@@ -342,12 +329,18 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
           setPage(1)
           simulateFetch()
         }}
-        rowCount={sorted.length}
         columns={columns}
         onColumnsChange={setColumns}
       />
       <TableFiltersBar
         open={filtersOpen}
+        status={status}
+        onStatusChange={(value) => {
+          setStatus(value)
+          pruneSelected(search, value, filters)
+          setPage(1)
+          simulateFetch()
+        }}
         filters={filters}
         onChange={(next) => {
           setFilters(next)
@@ -355,6 +348,16 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
           setPage(1)
           simulateFetch()
         }}
+      />
+      <GridSearchBar
+        search={search}
+        onSearchChange={(value) => {
+          setSearch(value)
+          pruneSelected(value, status, filters)
+          setPage(1)
+          simulateFetch()
+        }}
+        rowCount={sorted.length}
       />
       <div className="relative min-h-0 flex-1">
         <div className="h-full overflow-auto [&_[data-slot=table-container]]:overflow-visible">

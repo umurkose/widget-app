@@ -29,6 +29,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
+/** Phones in either orientation: cover the content instead of splitting it. */
+const OVERLAY_QUERY = "(max-width: 767px), (max-height: 520px)"
+
 const DEFAULT_WIDTH = 340
 const MIN_WIDTH = 280
 const RESIZE_STEP = 24
@@ -57,6 +60,18 @@ const TABS = [
 
 export type PanelPlacement = "side" | "bottom"
 
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = React.useState(false)
+  React.useEffect(() => {
+    const list = window.matchMedia(query)
+    const update = () => setMatches(list.matches)
+    update()
+    list.addEventListener("change", update)
+    return () => list.removeEventListener("change", update)
+  }, [query])
+  return matches
+}
+
 export function RowDetailPanel({
   row,
   related,
@@ -71,6 +86,7 @@ export function RowDetailPanel({
   onPlacementChange: (next: PanelPlacement) => void
 }) {
   const reducedMotion = useReducedMotion()
+  const overlay = useMediaQuery(OVERLAY_QUERY)
   const [tab, setTab] = React.useState<Tab>("Overview")
   const [shownId, setShownId] = React.useState(row?.id)
   const [width, setWidth] = React.useState(DEFAULT_WIDTH)
@@ -229,6 +245,24 @@ export function RowDetailPanel({
           {header}
           {body}
         </div>
+      </motion.aside>
+    )
+  }
+
+  if (overlay) {
+    return (
+      <motion.aside
+        aria-label={`Details for ${row.id}`}
+        // width is restated because the side branch may have left an inline
+        // width behind when the viewport crossed the breakpoint mid-animation.
+        initial={{ x: "100%", width: "100%" }}
+        animate={{ x: 0, width: "100%" }}
+        exit={{ x: "100%", width: "100%" }}
+        transition={spring}
+        className="absolute inset-0 z-30 flex flex-col border-l bg-background"
+      >
+        {header}
+        {body}
       </motion.aside>
     )
   }

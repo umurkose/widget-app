@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import {
   Archive,
   ArrowUpRight,
@@ -39,17 +40,11 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
 import {
   Tooltip,
   TooltipContent,
@@ -88,12 +83,12 @@ export function countActiveTableFilters(filters: TableFilters): number {
   )
 }
 
-const STATUS_ITEMS = [
-  { value: "all", label: "All statuses" },
-  { value: "Paid", label: "Paid" },
-  { value: "Pending", label: "Pending" },
-  { value: "Failed", label: "Failed" },
-  { value: "Refunded", label: "Refunded" },
+const STATUS_OPTIONS: { key: string; label: string; icon?: LucideIcon }[] = [
+  { key: "all", label: "All statuses", icon: Wallet },
+  { key: "Paid", label: "Paid", icon: BadgeCheck },
+  { key: "Pending", label: "Pending", icon: RefreshCw },
+  { key: "Failed", label: "Failed", icon: X },
+  { key: "Refunded", label: "Refunded", icon: RotateCcw },
 ]
 
 const OPTIONAL_COLUMNS: { key: keyof ColumnVisibility; label: string }[] = [
@@ -181,127 +176,167 @@ function PillGroup<K extends string>({
 }
 
 export function GridToolbar({
-  search,
-  onSearchChange,
-  status,
-  onStatusChange,
   filtersOpen,
   onFiltersOpenChange,
   activeFilterCount,
   canReset,
   onReset,
-  rowCount,
   columns,
   onColumnsChange,
 }: {
-  search: string
-  onSearchChange: (value: string) => void
-  status: string
-  onStatusChange: (value: string) => void
   filtersOpen: boolean
   onFiltersOpenChange: (open: boolean) => void
   activeFilterCount: number
   canReset: boolean
   onReset: () => void
-  rowCount: number
   columns: ColumnVisibility
   onColumnsChange: (next: ColumnVisibility) => void
 }) {
   return (
-    <div className="shrink-0 border-b">
-      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
-        <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search rows"
-            className="w-44 pl-8"
-            aria-label="Search transactions"
-          />
-        </div>
+    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-3">
+      <div className="flex items-center gap-0.5">
         <Button
-          className="ml-auto bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:text-green-950 dark:hover:bg-green-400"
+          variant={filtersOpen ? "secondary" : "ghost"}
+          aria-expanded={filtersOpen}
+          onClick={() => onFiltersOpenChange(!filtersOpen)}
         >
+          <ListFilter data-icon="inline-start" /> Filters
+          {activeFilterCount > 0 && (
+            <span className="flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground tabular-nums">
+              {activeFilterCount}
+            </span>
+          )}
+        </Button>
+        {canReset && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Reset all filters"
+                  className="text-muted-foreground animate-in fade-in-0 zoom-in-75"
+                  onClick={onReset}
+                />
+              }
+            >
+              <X />
+            </TooltipTrigger>
+            <TooltipContent>Reset all filters</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+      <div className="ml-auto flex items-center gap-2">
+        <Popover>
+          <PopoverTrigger render={<Button variant="outline" />}>
+            <Columns3 data-icon="inline-start" /> Columns
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-44 gap-0.5 p-1.5">
+            <p className="px-1.5 pt-1 pb-1.5 text-xs font-medium text-muted-foreground">
+              Toggle columns
+            </p>
+            {OPTIONAL_COLUMNS.map((column) => (
+              <label
+                key={column.key}
+                className="flex cursor-default items-center gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-muted/50"
+              >
+                <Checkbox
+                  checked={columns[column.key]}
+                  onCheckedChange={(checked) =>
+                    onColumnsChange({ ...columns, [column.key]: checked })
+                  }
+                />
+                {column.label}
+              </label>
+            ))}
+          </PopoverContent>
+        </Popover>
+        <Button className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:text-green-950 dark:hover:bg-green-400">
           <FileSpreadsheet data-icon="inline-start" /> Export
         </Button>
       </div>
-      <Separator />
-      <div className="flex flex-wrap items-center gap-2 px-4 py-2.5">
-        <NativeSelect
-          size="sm"
-          aria-label="Filter by status"
-          value={status}
-          onChange={(e) => onStatusChange(e.target.value)}
-        >
-          {STATUS_ITEMS.map((item) => (
-            <NativeSelectOption key={item.value} value={item.value}>
-              {item.label}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
-        <div className="flex items-center gap-0.5">
-          <Button
-            size="sm"
-            variant={filtersOpen ? "secondary" : "ghost"}
-            aria-expanded={filtersOpen}
-            onClick={() => onFiltersOpenChange(!filtersOpen)}
-          >
-            <ListFilter data-icon="inline-start" /> Filters
-            {activeFilterCount > 0 && (
-              <span className="flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground tabular-nums">
-                {activeFilterCount}
-              </span>
-            )}
-          </Button>
-          {canReset && (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    size="icon-sm"
-                    variant="ghost"
-                    aria-label="Reset all filters"
-                    className="text-muted-foreground animate-in fade-in-0 zoom-in-75"
-                    onClick={onReset}
-                  />
-                }
-              >
-                <X />
-              </TooltipTrigger>
-              <TooltipContent>Reset all filters</TooltipContent>
-            </Tooltip>
+    </div>
+  )
+}
+
+/**
+ * Full-bleed search: it sits flush between the filters and the grid, with no
+ * radius or margin of its own. The row count slides aside on a critically
+ * damped spring to make room for the clear button as soon as you type.
+ */
+export function GridSearchBar({
+  search,
+  onSearchChange,
+  rowCount,
+  variant = "flush",
+}: {
+  search: string
+  onSearchChange: (value: string) => void
+  rowCount: number
+  /** flush: full-bleed above the grid. boxed: rounded, inside a panel. */
+  variant?: "flush" | "boxed"
+}) {
+  const reducedMotion = useReducedMotion()
+  const spring = reducedMotion
+    ? { duration: 0 }
+    : ({ type: "spring", bounce: 0, duration: 0.3 } as const)
+
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center gap-2",
+        variant === "flush"
+          ? "h-11 border-b px-4"
+          : "h-8 rounded-(--radius-control) border px-3"
+      )}
+    >
+      <Search
+        className={cn(
+          "shrink-0 text-muted-foreground",
+          variant === "flush" ? "size-4" : "size-3.5"
+        )}
+      />
+      <input
+        value={search}
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder="Search rows"
+        aria-label="Search transactions"
+        className={cn(
+          "h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground",
+          variant === "flush" ? "text-sm" : "text-xs"
+        )}
+      />
+      <div className="flex shrink-0 items-center gap-1">
+        <motion.span
+          layout
+          transition={spring}
+          className={cn(
+            "font-accent text-muted-foreground tabular-nums",
+            variant === "flush" ? "text-xs" : "text-[11px]"
           )}
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {rowCount} {rowCount === 1 ? "row" : "rows"}
-          </span>
-          <Popover>
-            <PopoverTrigger render={<Button variant="outline" size="sm" />}>
-              <Columns3 data-icon="inline-start" /> Columns
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-44 gap-0.5 p-1.5">
-              <p className="px-1.5 pt-1 pb-1.5 text-xs font-medium text-muted-foreground">
-                Toggle columns
-              </p>
-              {OPTIONAL_COLUMNS.map((column) => (
-                <label
-                  key={column.key}
-                  className="flex cursor-default items-center gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-muted/50"
-                >
-                  <Checkbox
-                    checked={columns[column.key]}
-                    onCheckedChange={(checked) =>
-                      onColumnsChange({ ...columns, [column.key]: checked })
-                    }
-                  />
-                  {column.label}
-                </label>
-              ))}
-            </PopoverContent>
-          </Popover>
-        </div>
+        >
+          {rowCount} {rowCount === 1 ? "row" : "rows"}
+        </motion.span>
+        <AnimatePresence initial={false}>
+          {search !== "" && (
+            <motion.button
+              layout
+              type="button"
+              aria-label="Clear search"
+              onClick={() => onSearchChange("")}
+              initial={{ opacity: 0, scale: 0.6, width: 0 }}
+              animate={{ opacity: 1, scale: 1, width: variant === "flush" ? 24 : 20 }}
+              exit={{ opacity: 0, scale: 0.6, width: 0 }}
+              transition={spring}
+              className={cn(
+              "flex shrink-0 items-center justify-center overflow-hidden rounded-(--radius-control) text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+              variant === "flush" ? "h-6" : "h-5"
+            )}
+            >
+              <X className="size-3.5" />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
@@ -311,10 +346,14 @@ export function TableFiltersBar({
   open,
   filters,
   onChange,
+  status,
+  onStatusChange,
 }: {
   open: boolean
   filters: TableFilters
   onChange: (next: TableFilters) => void
+  status: string
+  onStatusChange: (value: string) => void
 }) {
   const activeCount = countActiveTableFilters(filters)
 
@@ -327,6 +366,13 @@ export function TableFiltersBar({
     >
       <div className="overflow-hidden">
         <div className="flex items-center gap-x-3 overflow-x-auto bg-muted/30 px-4 py-2.5">
+          <PillGroup
+            label="Status"
+            options={STATUS_OPTIONS}
+            value={status}
+            onSelect={onStatusChange}
+          />
+          <span aria-hidden className="h-4 w-px shrink-0 bg-border" />
           <PillGroup
             label="Role"
             options={ROLE_OPTIONS}

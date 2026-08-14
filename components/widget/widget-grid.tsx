@@ -225,7 +225,7 @@ export function WidgetGrid({
       ref={gridRef}
       role="list"
       aria-label="Dashboard widgets"
-      className="grid min-h-full grid-cols-4 grid-rows-[repeat(4,minmax(5.25rem,8.5rem))] content-center gap-4 p-4 select-none"
+      className="flex min-h-full flex-col gap-4 p-4 select-none md:grid md:grid-cols-4 md:grid-rows-[repeat(4,minmax(5.25rem,8.5rem))] md:content-center"
     >
       <span aria-live="polite" className="sr-only">
         {announcement}
@@ -300,7 +300,7 @@ export function WidgetGrid({
                 })
               }
               className={cn(
-                "relative min-h-0 rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                "relative min-h-0 rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50 max-md:min-h-44",
                 editing && "cursor-grab",
                 draggingId === w.id && "z-20 cursor-grabbing",
                 settling.has(w.id) && "z-10"
@@ -371,7 +371,7 @@ export function WidgetGrid({
             aria-label="Add widget"
             style={placeStyle(slot, span)}
             className={cn(
-              "flex min-h-0 items-center justify-center rounded-2xl border-2 border-dotted text-muted-foreground/40 transition-colors outline-none hover:border-muted-foreground/40 hover:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+              "flex min-h-0 items-center justify-center rounded-2xl border-2 border-dotted text-muted-foreground/40 max-md:min-h-24 max-md:not-first:hidden transition-colors outline-none hover:border-muted-foreground/40 hover:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
               active && "border-primary/70 bg-primary/5 text-primary"
             )}
           >
