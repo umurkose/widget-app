@@ -19,7 +19,10 @@ import {
 } from "@/components/table/cells"
 import { DetailPanel } from "@/components/app-shell"
 import { GridFooter } from "@/components/table/grid-footer"
-import { RowDetailPanel } from "@/components/table/row-detail-panel"
+import {
+  RowDetailPanel,
+  type PanelPlacement,
+} from "@/components/table/row-detail-panel"
 import { Sparkline, trendClass } from "@/components/table/sparkline"
 import {
   countActiveTableFilters,
@@ -131,6 +134,7 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
     window.addEventListener("popstate", onPopState)
     return () => window.removeEventListener("popstate", onPopState)
   }, [])
+  const [placement, setPlacement] = React.useState<PanelPlacement>("side")
   const [pending, setPending] = React.useState(false)
   const fetchTimer = React.useRef<number | null>(null)
 
@@ -259,8 +263,42 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
     Boolean
   ).length
 
+  const dockedBelow = placement === "bottom" && activeRow !== null
+
+  const panel = (
+    <RowDetailPanel
+      row={activeRow}
+      related={
+        activeRow
+          ? rows
+              .filter(
+                (r) =>
+                  r.user.email === activeRow.user.email && r.id !== activeRow.id
+              )
+              .slice(0, 8)
+          : []
+      }
+      onClose={() => openDetail(null)}
+      placement={placement}
+      onPlacementChange={setPlacement}
+    />
+  )
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div
+      className={cn(
+        "flex min-h-0 flex-1 flex-col",
+        dockedBelow && "overflow-y-auto"
+      )}
+    >
+      {/* Docked below, the grid keeps a screen minus a sliver so the panel
+          peeks into view and the page scrolls down to it. */}
+      <div
+        className={cn(
+          "flex flex-col",
+          dockedBelow ? "h-[calc(100%-3rem)] shrink-0" : "min-h-0 flex-1"
+        )}
+      >
       <GridToolbar
         search={search}
         onSearchChange={(value) => {
@@ -519,23 +557,8 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
           simulateFetch()
         }}
       />
-      <DetailPanel>
-        <RowDetailPanel
-          row={activeRow}
-          related={
-            activeRow
-              ? rows
-                  .filter(
-                    (r) =>
-                      r.user.email === activeRow.user.email &&
-                      r.id !== activeRow.id
-                  )
-                  .slice(0, 8)
-              : []
-          }
-          onClose={() => openDetail(null)}
-        />
-      </DetailPanel>
+      </div>
+      {placement === "bottom" ? panel : <DetailPanel>{panel}</DetailPanel>}
     </div>
   )
 }

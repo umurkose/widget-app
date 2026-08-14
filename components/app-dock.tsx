@@ -45,6 +45,13 @@ const items = [
   },
 ]
 
+/** "/table" stays active on "/table/<slug>"; "/" only matches itself. */
+function isActiveHref(pathname: string, href: string) {
+  return href === "/"
+    ? pathname === "/"
+    : pathname === href || pathname.startsWith(`${href}/`)
+}
+
 export function AppDock() {
   const pathname = usePathname()
   const reducedMotion = useReducedMotion()
@@ -62,6 +69,9 @@ export function AppDock() {
   const targetSize = useMotionValue(40)
   const springX = useSpring(targetX, { stiffness: 520, damping: 30 })
   const springSize = useSpring(targetSize, { stiffness: 600, damping: 40 })
+  // True only while the indicator is travelling to a newly active icon.
+  const sliding = React.useRef(false)
+  const lastPath = React.useRef(pathname)
   const velocity = useVelocity(springX)
   const stretch = useTransform(velocity, (v) =>
     Math.min(Math.abs(v) / 1600, 0.5)
@@ -80,23 +90,41 @@ export function AppDock() {
 
   useAnimationFrame(() => {
     const dock = dockRef.current
-    const icon = iconRefs.current.get(pathname)
+    const active = items.find((item) => isActiveHref(pathname, item.href))
+    const icon = active ? iconRefs.current.get(active.href) : null
     if (!dock || !icon) return
+
     const dockBounds = dock.getBoundingClientRect()
-    const iconBounds = icon.getBoundingClientRect()
-    const cx = iconBounds.left + iconBounds.width / 2 - dockBounds.left
-    const cy = iconBounds.top + iconBounds.height / 2 - dockBounds.top
+    // The DockIcon box, not the inner span: its centre is the true centre.
+    const iconBounds = (icon.parentElement?.parentElement ?? icon).getBoundingClientRect()
+    // Absolute children sit inside the dock's border, so discount it.
+    const cx =
+      iconBounds.left + iconBounds.width / 2 - dockBounds.left - dock.clientLeft
+    const cy =
+      iconBounds.top + iconBounds.height / 2 - dockBounds.top - dock.clientTop
+
     centerY.set(cy)
-    if (!settledRef.current || reducedMotion) {
+    // Size tracks the icon exactly — springing it too would make the
+    // indicator breathe a frame behind every magnification.
+    targetSize.jump(iconBounds.width)
+    springSize.jump(iconBounds.width)
+
+    if (pathname !== lastPath.current) {
+      lastPath.current = pathname
+      sliding.current = settledRef.current && !reducedMotion
+    }
+
+    if (sliding.current) {
+      targetX.set(cx)
+      if (Math.abs(springX.get() - cx) < 0.5) sliding.current = false
+    } else {
+      // Not travelling: sit exactly on the icon, so hover magnification can
+      // never leave the indicator lagging or jittering behind it.
       targetX.jump(cx)
       springX.jump(cx)
-      targetSize.jump(iconBounds.width)
-      springSize.jump(iconBounds.width)
-      settledRef.current = true
-    } else {
-      targetX.set(cx)
-      targetSize.set(iconBounds.width)
     }
+
+    settledRef.current = true
     opacity.set(1)
   })
 
@@ -114,7 +142,7 @@ export function AppDock() {
           style={{ x, y, width: springSize, height: springSize, scaleX, scaleY, opacity }}
         />
         {items.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = isActiveHref(pathname, item.href)
           const Icon = item.icon
 
           return (

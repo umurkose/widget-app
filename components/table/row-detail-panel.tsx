@@ -10,6 +10,8 @@ import {
   Gauge,
   Info,
   Paperclip,
+  PanelBottom,
+  PanelRight,
   ShieldCheck,
   StickyNote,
   Tag,
@@ -21,6 +23,11 @@ import { cn } from "@/lib/utils"
 import { type Transaction } from "@/components/table/data"
 import { TabPanel, type Tab } from "@/components/table/tab-panels"
 import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const DEFAULT_WIDTH = 340
 const MIN_WIDTH = 280
@@ -48,14 +55,20 @@ const TABS = [
   { key: "Audit", icon: ShieldCheck },
 ] as const satisfies readonly { key: Tab; icon: LucideIcon }[]
 
+export type PanelPlacement = "side" | "bottom"
+
 export function RowDetailPanel({
   row,
   related,
   onClose,
+  placement,
+  onPlacementChange,
 }: {
   row: Transaction | null
   related: Transaction[]
   onClose: () => void
+  placement: PanelPlacement
+  onPlacementChange: (next: PanelPlacement) => void
 }) {
   const reducedMotion = useReducedMotion()
   const [tab, setTab] = React.useState<Tab>("Overview")
@@ -122,94 +135,145 @@ export function RowDetailPanel({
     return () => window.removeEventListener("resize", onResize)
   }, [])
 
-  return (
-    <AnimatePresence initial={false}>
-      {row && (
-        <motion.aside
-          key="row-detail"
-          aria-label={`Details for ${row.id}`}
-          initial={{ width: 0 }}
-          animate={{ width }}
-          exit={{ width: 0 }}
-          transition={
-            reducedMotion || resizing
-              ? { duration: 0 }
-              : { type: "spring", bounce: 0, duration: 0.4 }
-          }
-          className="relative shrink-0 overflow-hidden border-l bg-background"
-        >
-          <div
-            role="separator"
-            aria-orientation="vertical"
-            aria-label="Resize details panel"
-            tabIndex={0}
-            onPointerDown={(e) => {
-              if (e.button !== 0) return
-              e.preventDefault()
-              drag.current = { startX: e.clientX, startWidth: width }
-              setResizing(true)
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowLeft") setWidth((w) => clampWidth(w + RESIZE_STEP))
-              else if (e.key === "ArrowRight")
-                setWidth((w) => clampWidth(w - RESIZE_STEP))
-              else return
-              e.preventDefault()
-            }}
-            className={cn(
-              "absolute inset-y-0 left-0 z-20 w-1.5 cursor-col-resize touch-none transition-colors outline-none hover:bg-primary/30 focus-visible:bg-primary/40",
-              resizing && "bg-primary/40"
-            )}
-          />
-          {/* Explicit width so the content never reflows while the panel moves. */}
-          <div className="flex h-full flex-col" style={{ width }}>
-            {/* Same padding and control size as the page header so both
-                bottom borders land on one line. */}
-            <div className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-3">
-              <div className="min-w-0">
-                <p className="font-mono text-[11px] leading-tight text-muted-foreground">
-                  {row.id}
-                </p>
-                <p className="truncate text-sm leading-tight font-medium">
-                  {row.user.name}
-                </p>
-              </div>
+  if (!row) {
+    return <AnimatePresence initial={false} />
+  }
+
+  const header = (
+    /* Same padding and control size as the page header so both bottom
+       borders land on one line. */
+    <div className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-3">
+      <div className="min-w-0">
+        <p className="font-mono text-[11px] leading-tight text-muted-foreground">
+          {row.id}
+        </p>
+        <p className="truncate text-sm leading-tight font-medium">
+          {row.user.name}
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-0.5">
+        <Tooltip>
+          <TooltipTrigger
+            render={
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label="Close details"
-                onClick={onClose}
-              >
-                <X />
-              </Button>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
-              <div className="flex flex-wrap content-start items-start gap-1">
-                {TABS.map(({ key, icon: Icon }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    aria-pressed={tab === key}
-                    onClick={() => setTab(key)}
-                    className={cn(
-                      "flex h-6 shrink-0 items-center gap-1 rounded-(--radius-control) px-1.5 text-[11px] leading-none font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                      tab === key
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <Icon aria-hidden className="size-3 shrink-0" />
-                    {key}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-3">
-                <TabPanel tab={tab} row={row} related={related} />
-              </div>
-            </div>
-          </div>
-        </motion.aside>
-      )}
-    </AnimatePresence>
+                aria-label={
+                  placement === "side"
+                    ? "Open details below the table"
+                    : "Open details beside the table"
+                }
+                onClick={() =>
+                  onPlacementChange(placement === "side" ? "bottom" : "side")
+                }
+              />
+            }
+          >
+            {placement === "side" ? <PanelBottom /> : <PanelRight />}
+          </TooltipTrigger>
+          <TooltipContent>
+            {placement === "side" ? "Dock to bottom" : "Dock to side"}
+          </TooltipContent>
+        </Tooltip>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Close details"
+          onClick={onClose}
+        >
+          <X />
+        </Button>
+      </div>
+    </div>
+  )
+
+  const body = (
+    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+      <div className="flex flex-wrap content-start items-start gap-1">
+        {TABS.map(({ key, icon: Icon }) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={tab === key}
+            onClick={() => setTab(key)}
+            className={cn(
+              "flex h-6 shrink-0 items-center gap-1 rounded-(--radius-control) px-1.5 text-[11px] leading-none font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+              tab === key
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <Icon aria-hidden className="size-3 shrink-0" />
+            {key}
+          </button>
+        ))}
+      </div>
+      <div className="mt-3">
+        <TabPanel tab={tab} row={row} related={related} />
+      </div>
+    </div>
+  )
+
+  const spring = reducedMotion
+    ? { duration: 0 }
+    : ({ type: "spring", bounce: 0, duration: 0.4 } as const)
+
+  // Docked below the table: the section grows like an accordion and the page
+  // scrolls down to it, so a sliver stays in view under the grid.
+  if (placement === "bottom") {
+    return (
+      <motion.aside
+        aria-label={`Details for ${row.id}`}
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: "100%", opacity: 1 }}
+        transition={spring}
+        className="w-full shrink-0 overflow-hidden border-t bg-background"
+      >
+        <div className="flex h-full flex-col">
+          {header}
+          {body}
+        </div>
+      </motion.aside>
+    )
+  }
+
+  return (
+    <motion.aside
+      aria-label={`Details for ${row.id}`}
+      initial={{ width: 0 }}
+      animate={{ width }}
+      exit={{ width: 0 }}
+      transition={resizing ? { duration: 0 } : spring}
+      className="relative shrink-0 overflow-hidden border-l bg-background"
+    >
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize details panel"
+        tabIndex={0}
+        onPointerDown={(e) => {
+          if (e.button !== 0) return
+          e.preventDefault()
+          drag.current = { startX: e.clientX, startWidth: width }
+          setResizing(true)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft") setWidth((w) => clampWidth(w + RESIZE_STEP))
+          else if (e.key === "ArrowRight")
+            setWidth((w) => clampWidth(w - RESIZE_STEP))
+          else return
+          e.preventDefault()
+        }}
+        className={cn(
+          "absolute inset-y-0 left-0 z-20 w-1.5 cursor-col-resize touch-none transition-colors outline-none hover:bg-primary/30 focus-visible:bg-primary/40",
+          resizing && "bg-primary/40"
+        )}
+      />
+      {/* Explicit width so the content never reflows while the panel moves. */}
+      <div className="flex h-full flex-col" style={{ width }}>
+        {header}
+        {body}
+      </div>
+    </motion.aside>
   )
 }
