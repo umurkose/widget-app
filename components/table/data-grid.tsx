@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { AnimatePresence, motion, useSpring, useTransform } from "motion/react"
 import { BadgeCheck } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -45,6 +46,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+
+/** Screen the grid gives up so the panel's header and tabs stay readable. */
+const BOTTOM_SLIVER = 208
 
 function matchesFilters(
   row: Transaction,
@@ -135,6 +139,11 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
     return () => window.removeEventListener("popstate", onPopState)
   }, [])
   const [placement, setPlacement] = React.useState<PanelPlacement>("side")
+  // How much of the screen the grid hands to a bottom-docked panel. Springing
+  // it keeps the switch continuous instead of snapping between layouts.
+  const sliver = useSpring(0, { stiffness: 260, damping: 34 })
+  const gridHeight = useTransform(sliver, (v) => `calc(100% - ${v}px)`)
+  const [givingRoom, setGivingRoom] = React.useState(false)
   const [pending, setPending] = React.useState(false)
   const fetchTimer = React.useRef<number | null>(null)
 
@@ -152,6 +161,11 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
     },
     []
   )
+
+  React.useEffect(() => {
+    const unsubscribe = sliver.on("change", (v) => setGivingRoom(v > 0.5))
+    return unsubscribe
+  }, [sliver])
 
   const filtered = React.useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -264,25 +278,24 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
   ).length
 
   const dockedBelow = placement === "bottom" && activeRow !== null
+  sliver.set(dockedBelow ? BOTTOM_SLIVER : 0)
 
-  const panel = (
-    <RowDetailPanel
-      row={activeRow}
-      related={
-        activeRow
-          ? rows
-              .filter(
-                (r) =>
-                  r.user.email === activeRow.user.email && r.id !== activeRow.id
-              )
-              .slice(0, 8)
-          : []
-      }
-      onClose={() => openDetail(null)}
-      placement={placement}
-      onPlacementChange={setPlacement}
-    />
-  )
+  const panelFor = (at: PanelPlacement) =>
+    activeRow ? (
+      <RowDetailPanel
+        key={at}
+        row={activeRow}
+        related={rows
+          .filter(
+            (r) =>
+              r.user.email === activeRow.user.email && r.id !== activeRow.id
+          )
+          .slice(0, 8)}
+        onClose={() => openDetail(null)}
+        placement={at}
+        onPlacementChange={setPlacement}
+      />
+    ) : null
 
   return (
     <div
@@ -291,13 +304,12 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
         dockedBelow && "overflow-y-auto"
       )}
     >
-      {/* Docked below, the grid keeps a screen minus a sliver so the panel
-          peeks into view and the page scrolls down to it. */}
-      <div
-        className={cn(
-          "flex flex-col",
-          dockedBelow ? "h-[calc(100%-3rem)] shrink-0" : "min-h-0 flex-1"
-        )}
+      {/* Docked below, the grid gives up the bottom of the screen so the
+          panel's header and tabs are already readable, and scrolling down
+          brings it to full height. */}
+      <motion.div
+        className={cn("flex flex-col", givingRoom ? "shrink-0" : "min-h-0 flex-1")}
+        style={givingRoom ? { height: gridHeight } : undefined}
       >
       <GridToolbar
         search={search}
@@ -557,8 +569,15 @@ export function DataGrid({ initialSlug }: { initialSlug?: string }) {
           simulateFetch()
         }}
       />
-      </div>
-      {placement === "bottom" ? panel : <DetailPanel>{panel}</DetailPanel>}
+      </motion.div>
+      <AnimatePresence initial={false}>
+        {placement === "bottom" && panelFor("bottom")}
+      </AnimatePresence>
+      <DetailPanel>
+        <AnimatePresence initial={false}>
+          {placement === "side" && panelFor("side")}
+        </AnimatePresence>
+      </DetailPanel>
     </div>
   )
 }

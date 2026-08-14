@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { motion, useReducedMotion } from "motion/react"
 import {
   Activity,
   CircleUser,
@@ -64,7 +64,7 @@ export function RowDetailPanel({
   placement,
   onPlacementChange,
 }: {
-  row: Transaction | null
+  row: Transaction
   related: Transaction[]
   onClose: () => void
   placement: PanelPlacement
@@ -78,14 +78,13 @@ export function RowDetailPanel({
   const drag = React.useRef<{ startX: number; startWidth: number } | null>(null)
 
   // Every row opens on its own terms — start each one at the summary.
-  if (row && row.id !== shownId) {
+  if (row.id !== shownId) {
     setShownId(row.id)
     setTab("Overview")
   }
 
   // Esc closes the panel, unless a dialog or popover owns the key first.
   React.useEffect(() => {
-    if (!row) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return
       if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return
@@ -134,10 +133,6 @@ export function RowDetailPanel({
     window.addEventListener("resize", onResize)
     return () => window.removeEventListener("resize", onResize)
   }, [])
-
-  if (!row) {
-    return <AnimatePresence initial={false} />
-  }
 
   const header = (
     /* Same padding and control size as the page header so both bottom
@@ -226,6 +221,7 @@ export function RowDetailPanel({
         aria-label={`Details for ${row.id}`}
         initial={{ height: 0, opacity: 0 }}
         animate={{ height: "100%", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
         transition={spring}
         className="w-full shrink-0 overflow-hidden border-t bg-background"
       >
